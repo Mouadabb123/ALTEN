@@ -1,47 +1,145 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Home - Spring Boot Security Tutorial</title>
+  <title>Testeur - Interface</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
   <style>
     body {
-      font-family: 'Arial', sans-serif;
-      background-color: #3cd9e7;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background-color: #f5f7fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .sidebar {
       height: 100vh;
-      color: #fff;
+      width: 250px;
+      background-color: #2c3e50;
+      color: white;
+      position: fixed;
+      top: 0;
+      left: 0;
+      padding: 2rem 1rem;
     }
 
-    .container {
+    .sidebar h4 {
       text-align: center;
-      background-color: #2299a4;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      max-width: 400px;
-      width: 100%;
+      margin-bottom: 2rem;
     }
 
-    h1 {
-      color: #ffffff;
+    .sidebar a {
+      color: white;
+      display: block;
+      padding: 10px 15px;
+      text-decoration: none;
+      border-radius: 5px;
+      margin-bottom: 10px;
     }
 
-    p {
-      font-size: 18px;
-      margin-bottom: 20px;
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #34495e;
     }
 
+    .logout-btn {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+    }
+
+    .content {
+      margin-left: 260px;
+      padding: 2rem;
+    }
+
+    .card {
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.06);
+    }
+
+    .form-select {
+      max-width: 180px;
+    }
   </style>
 </head>
 <body>
-<div class="container">
-  <h1>Welcome, Testeur!</h1>
-  <p>This is the user home page. Explore and access your Testeur-specific features.</p>
+
+<!-- Sidebar -->
+<div class="sidebar d-flex flex-column">
+  <h4>🧑‍🔬 Testeur</h4>
+  <a href="#planTest" class="active"><i class="bi bi-list-task me-2"></i>Plans de Test</a>
+  <a href="#planningTest"><i class="bi bi-calendar-event me-2"></i>Plannings</a>
+
+  <div class="logout-btn">
+    <a href="/logout" class="btn btn-outline-light w-100"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
+  </div>
 </div>
+
+<!-- Content -->
+<div class="content">
+  <!-- Plans de Test -->
+  <div id="planTest">
+    <h3 class="mb-4">📋 Mes Plans de Test</h3>
+    <div class="card p-4 mb-4">
+      <table class="table table-hover">
+        <thead>
+        <tr>
+          <th>Cas de Test</th>
+          <th>Description</th>
+          <th>Outils</th>
+          <th>Commentaire</th>
+          <th>Statut</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>test</td>
+          <td>Test </td>
+          <td>OMS</td>
+          <td>Aucun</td>
+          <td>
+            <select class="form-select">
+              <option>Non commencé</option>
+              <option>En cours</option>
+              <option>Réussi</option>
+              <option>Échoué</option>
+            </select>
+          </td>
+        </tr>
+        <!-- Autres cas dynamiques -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Plannings -->
+  <div id="planningTest">
+    <h3 class="mb-4">🗓️ Mon Planning</h3>
+    <div class="card p-4">
+      <table class="table table-striped">
+        <thead>
+        <tr>
+          <th>Tâche</th>
+          <th>Date Début</th>
+          <th>Date Fin</th>
+          <th>Commentaire</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>Test</td>
+          <td>2025-04-09</td>
+          <td>2025-04-10</td>
+          <td>test</td>
+        </tr>
+        <!-- Autres tâches dynamiques -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
