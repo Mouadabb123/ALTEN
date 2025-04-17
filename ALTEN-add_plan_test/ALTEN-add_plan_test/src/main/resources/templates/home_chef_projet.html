@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Chef de Projet - Gestion des Tests</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .sidebar {
+      height: 100vh;
+      background-color: #343a40;
+      color: white;
+      padding-top: 2rem;
+      position: fixed;
+      width: 250px;
+    }
+
+    .sidebar a {
+      color: white;
+      display: block;
+      padding: 12px 20px;
+      text-decoration: none;
+      transition: background-color 0.2s ease;
+    }
+
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #495057;
+    }
+
+    .sidebar .logout {
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .content {
+      margin-left: 250px;
+      padding: 2rem;
+    }
+
+    .card {
+      border-radius: 16px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar d-flex flex-column">
+  <h4 class="text-center">👨‍💼 Chef de Projet</h4>
+  <hr class="text-light">
+
+  <div id="teamMenu">
+    <p class="text-light ps-3">Choisir une équipe :</p>
+    <a href="#" class="team-link" data-team="equipe1">Équipe ICP</a>
+    <a href="#" class="team-link" data-team="equipe2">Équipe Cronos</a>
+    <a href="#" class="team-link" data-team="equipe3">Équipe OMS</a>
+  </div>
+
+  <hr class="text-light">
+
+  <div id="navAfterTeam" class="hidden">
+    <p class="text-light ps-3">Navigation :</p>
+    <a href="#planningSection" class="nav-link">📅 Planning de Test</a>
+    <a href="#planSection" class="nav-link">📝 Plan de Test</a>
+  </div>
+
+  <div class="logout mt-auto">
+    <a href="/logout" class="btn btn-outline-light"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
+  </div>
+</div>
+
+<!-- Main content -->
+<div class="content">
+  <h2 id="welcomeTitle">Bienvenue !</h2>
+  <p>Sélectionnez une équipe pour commencer à gérer ses tests.</p>
+
+  <!-- Planning de test -->
+  <div id="planningSection" class="hidden mt-4">
+    <h4>📅 Planning de Test - <span id="teamNamePlanning"></span></h4>
+    <div class="card p-4 mt-2">
+      <p>Visualisez et modifiez les plannings de test de cette équipe.</p>
+      <a href="#" class="btn btn-primary">Voir Planning</a>
+    </div>
+  </div>
+
+  <!-- Plan de test -->
+  <div id="planSection" class="hidden mt-4">
+    <h4>📝 Plan de Test - <span id="teamNamePlan"></span></h4>
+    <div class="card p-4 mt-2">
+      <p>Créez et consultez les plans de test liés à cette équipe.</p>
+      <a href="#" class="btn btn-primary">Voir Plan de Test</a>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS + Script personnalisé -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const teamLinks = document.querySelectorAll('.team-link');
+  const planningSection = document.getElementById('planningSection');
+  const planSection = document.getElementById('planSection');
+  const navAfterTeam = document.getElementById('navAfterTeam');
+  const welcomeTitle = document.getElementById('welcomeTitle');
+  const teamNamePlanning = document.getElementById('teamNamePlanning');
+  const teamNamePlan = document.getElementById('teamNamePlan');
+
+  teamLinks.forEach(link => {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+
+      // Highlight selected team
+      teamLinks.forEach(l => l.classList.remove('active'));
+      this.classList.add('active');
+
+      const team = this.textContent;
+      welcomeTitle.textContent = `Équipe sélectionnée : ${team}`;
+      teamNamePlanning.textContent = team;
+      teamNamePlan.textContent = team;
+
+      // Show sections
+      navAfterTeam.classList.remove('hidden');
+      planningSection.classList.remove('hidden');
+      planSection.classList.remove('hidden');
+    });
+  });
+</script>
+
+</body>
+</html>
