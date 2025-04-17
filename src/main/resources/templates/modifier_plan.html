@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Modifier Plan de Test</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0"><i class="fas fa-edit me-2"></i>Modifier le Plan de Test</h2>
+                <a th:href="@{'/plan-de-test/liste'}" class="btn btn-light btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i> Retour
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <form th:action="@{'/plan-de-test/' + ${plan.id} + '/modifier'}" th:object="${plan}" method="post">
+                <div class="mb-3">
+                    <label for="titre" class="form-label">
+                        <i class="fas fa-heading me-1 text-primary"></i> Titre
+                    </label>
+                    <input type="text" class="form-control" id="titre" th:field="*{titre}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">
+                        <i class="fas fa-align-left me-1 text-primary"></i> Description
+                    </label>
+                    <textarea class="form-control" id="description" th:field="*{description}" rows="4" required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="outils" class="form-label">
+                        <i class="fas fa-tools me-1 text-primary"></i> Outils
+                    </label>
+                    <input type="text" class="form-control" id="outils" th:field="*{outils}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="commentaire" class="form-label">
+                        <i class="fas fa-comment me-1 text-primary"></i> Commentaire
+                    </label>
+                    <textarea class="form-control" id="commentaire" th:field="*{commentaire}" rows="3"></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label for="testLeaders" class="form-label">
+                        <i class="fas fa-users me-1 text-primary"></i> Co-Test Leaders
+                    </label>
+                    <select class="form-select" id="testLeaders" name="selectedLeaders" multiple size="3">
+                        <option th:each="leader : ${testLeaders}"
+                                th:value="${leader.id}"
+                                th:text="${leader.nom} + ' ' + ${leader.prenom}">
+                        </option>
+                    </select>
+                    <div class="form-text">Maintenez Ctrl (Windows) ou Cmd (Mac) pour sélectionner plusieurs options</div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-1"></i> Enregistrer les modifications
+                    </button>
+                    <a th:href="@{'/plan-de-test/liste'}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i> Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Custom JS if needed -->
+<script src="/js/scripts.js"></script>
+</body>
+</html>

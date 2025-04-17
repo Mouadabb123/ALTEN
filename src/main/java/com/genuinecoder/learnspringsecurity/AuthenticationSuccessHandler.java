@@ -5,9 +5,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+@Component // <-- This will register the handler as a Spring bean
 public class AuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 
     @Override
@@ -26,7 +28,7 @@ public class AuthenticationSuccessHandler extends SavedRequestAwareAuthenticatio
                         case "ROLE_CHEF_PROJET":
                             return "/chef-projet/home";
                         case "ROLE_TEST_LEADER":
-                            return "/test-leader/home";
+                            return "/plan-de-test/liste"; // Update this URL
                         case "ROLE_TESTEUR":
                             return "/testeur/home";
                         default:

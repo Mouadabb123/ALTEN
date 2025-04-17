@@ -44,20 +44,20 @@ public class ContentController {
   }
 
 
-    @GetMapping("/login")
-    public String showLoginPage(
-            HttpServletRequest request,
-            Model model) {
+  @GetMapping("/login")
+  public String showLoginPage(
+          HttpServletRequest request,
+          Model model) {
 
-      // Récupère le paramètre d'erreur de la session
-      Object error = request.getSession().getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
+    // Récupère le paramètre d'erreur de la session
+    Object error = request.getSession().getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
 
-      if (error != null) {
-        model.addAttribute("error", "Email ou mot de passe incorrect");
-        // Nettoie l'erreur de la session après l'avoir récupérée
-        request.getSession().removeAttribute("SPRING_SECURITY_LAST_EXCEPTION");
-      }
-
-      return "custom_login";
+    if (error != null) {
+      model.addAttribute("error", "Email ou mot de passe incorrect");
+      // Nettoie l'erreur de la session après l'avoir récupérée
+      request.getSession().removeAttribute("SPRING_SECURITY_LAST_EXCEPTION");
     }
+
+    return "custom_login";
   }
+}

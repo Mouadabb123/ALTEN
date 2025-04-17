@@ -2,9 +2,8 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>Test Lead - Gestion de Tests</title>
+  <title>Plan de Test</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Bootstrap CSS & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
   <style>
@@ -58,23 +57,9 @@
     .card {
       border-radius: 15px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+      padding: 2rem;
       margin-bottom: 2rem;
-    }
-
-    .btn-action {
-      margin-right: 5px;
-    }
-
-    .table th {
-      background-color: #e9ecef;
-    }
-
-    /* Style pour le formulaire modal */
-    .form-label {
-      font-weight: 500;
-    }
-    .modal-content {
-      border-radius: 15px;
+      background-color: white;
     }
   </style>
 </head>
@@ -94,150 +79,165 @@
 
 <!-- Content -->
 <div class="content">
-  <!-- Plan de Test -->
-  <div id="planTest">
+  <!-- Première section: Gestion des Plans de Test -->
+  <div class="card">
     <h3 class="mb-4">📋 Gestion des Plans de Test</h3>
-    <div class="card p-4">
-      <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#ajouterPlanModal">
-        <i class="bi bi-plus-circle"></i> Ajouter un plan de test
-      </button>
 
-      <table class="table table-hover">
+    <!-- Message de succès avec animation -->
+    <div id="successAlert" th:if="${successMessage}" class="custom-alert">
+      <span th:text="${successMessage}">✅ Plan de test créé avec succès !</span>
+    </div>
+
+    <style>
+      .custom-alert {
+        background-color: #d1e7dd;
+        color: #0f5132;
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #badbcc;
+        font-weight: 500;
+        font-size: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity 0.8s ease, transform 0.8s ease;
+        position: relative;
+        animation: fadeInSlideDown 0.8s forwards;
+      }
+
+      @keyframes fadeInSlideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeOut {
+        to {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+      }
+    </style>
+
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+        const alert = document.getElementById('successAlert');
+        if (alert) {
+          // Disparaît après 4 secondes
+          setTimeout(() => {
+            alert.style.animation = 'fadeOut 0.8s forwards';
+            setTimeout(() => alert.remove(), 800);
+          }, 4000);
+        }
+      });
+    </script>
+
+    <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#ajouterPlanModal">
+      <i class="bi bi-plus-circle"></i> Ajouter un plan de test
+    </button>
+  </div>
+
+  <!-- Deuxième section: Tableau des Plans de Test -->
+  <div class="card">
+    <h3 class="mb-4">Mes Plans de Test</h3>
+
+    <div th:if="${plans != null and plans.isEmpty()}">
+      <p class="text-muted">Aucun plan de test disponible.</p>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-striped table-hover" th:if="${plans != null and not #lists.isEmpty(plans)}">
         <thead>
         <tr>
+          <th>ID</th>
           <th>Titre</th>
           <th>Description</th>
           <th>Outils</th>
-          <th>Commentaire</th>
           <th>Actions</th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="plan : ${plans}">
-          <td th:text="${plan.titre}"> </td>
-          <td th:text="${plan.description}"> </td>
-          <td th:text="${plan.outils}"> </td>
-          <td th:text="${plan.commentaire}"> </td>
+          <td th:text="${plan.id}"></td>
+          <td th:text="${plan.titre}"></td>
+          <td th:text="${plan.description}"></td>
+          <td th:text="${plan.outils}"></td>
           <td>
-            <button class="btn btn-primary btn-sm btn-action"><i class="bi bi-pencil"></i></button>
-            <button class="btn btn-danger btn-sm btn-action"><i class="bi bi-trash"></i></button>
+            <a th:href="@{'/plan-de-test/' + ${plan.id}}" class="btn btn-sm btn-primary">Voir</a>
+            <a th:href="@{'/plan-de-test/' + ${plan.id} + '/modifier'}" class="btn btn-sm btn-warning">Modifier</a>
           </td>
         </tr>
         </tbody>
       </table>
     </div>
-  </div>
 
-  <!-- Modal pour ajouter un plan de test -->
-  <div class="modal fade" id="ajouterPlanModal" tabindex="-1" aria-labelledby="ajouterPlanModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="ajouterPlanModalLabel">Nouveau Plan de Test</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <form th:action="@{/plan-de-test/creer}" method="post">
-          <div class="modal-body">
-            <div class="mb-3">
-              <label for="titre" class="form-label">Titre</label>
-              <input type="text" class="form-control" id="titre" name="titre" required>
-            </div>
-
-            <div class="mb-3">
-              <label for="description" class="form-label">Description</label>
-              <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
-            </div>
-
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="outils" class="form-label">Outils utilisés</label>
-                <input type="text" class="form-control" id="outils" name="outils" required>
-              </div>
-
-              <div class="col-md-6 mb-3">
-                <label for="commentaire" class="form-label">Commentaire</label>
-                <input type="text" class="form-control" id="commentaire" name="commentaire" required>
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Test Leaders associés</label>
-              <div th:each="user : ${testLeaders}">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" th:id="'leader_' + ${user.id}"
-                         th:value="${user.id}" name="selectedLeaders">
-                  <label class="form-check-label" th:for="'leader_' + ${user.id}">
-                    <span th:text="${user.prenom + ' ' + user.nom}">Nom Prénom</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-            <button type="submit" class="btn btn-primary">Enregistrer</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Planning de Test -->
-  <div id="planningTest">
-    <h3 class="mb-4">🗓️ Gestion des Plannings de Test</h3>
-    <div class="card p-4">
-      <button class="btn btn-success mb-3"><i class="bi bi-plus-circle"></i> Ajouter une tâche</button>
-      <table class="table table-hover">
-        <thead>
-        <tr>
-          <th>Tâche</th>
-          <th>Date Début</th>
-          <th>Date Fin</th>
-          <th>Commentaire</th>
-          <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <td>Test OMS</td>
-          <td>2025-04-10</td>
-          <td>2025-04-12</td>
-          <td>en cours</td>
-          <td>
-            <button class="btn btn-primary btn-sm btn-action"><i class="bi bi-pencil"></i></button>
-            <button class="btn btn-danger btn-sm btn-action"><i class="bi bi-trash"></i></button>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Historique -->
-  <div id="historique">
-    <h3 class="mb-4">🔁 Historique des Modifications</h3>
-    <div class="card p-4">
-      <table class="table table-striped">
-        <thead>
-        <tr>
-          <th>Date</th>
-          <th>Action</th>
-          <th>Détail</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <td>2025-04-07</td>
-          <td>Ajout</td>
-          <td>Plan de test OMS</td>
-        </tr>
-        </tbody>
-      </table>
+    <div class="mt-3">
+      <a href="/test-leader/home" class="btn btn-secondary">Retour à l'accueil</a>
     </div>
   </div>
 </div>
 
-<!-- Bootstrap JS Bundle with Popper -->
+<!-- Modal pour ajouter un plan de test -->
+<div class="modal fade" id="ajouterPlanModal" tabindex="-1" aria-labelledby="ajouterPlanModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ajouterPlanModalLabel">Nouveau Plan de Test</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form th:action="@{/plan-de-test/creer}" method="post">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="titre" class="form-label">Titre</label>
+            <input type="text" class="form-control" id="titre" name="titre" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="outils" class="form-label">Outils utilisés</label>
+              <input type="text" class="form-control" id="outils" name="outils" required>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label for="commentaire" class="form-label">Commentaire</label>
+              <input type="text" class="form-control" id="commentaire" name="commentaire" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Test Leaders associés</label>
+            <div th:each="user : ${testLeaders}">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" th:id="'leader_' + ${user.id}"
+                       th:value="${user.id}" name="selectedLeaders">
+                <label class="form-check-label" th:for="'leader_' + ${user.id}">
+                  <span th:text="${user.prenom + ' ' + user.nom}">Nom Prénom</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

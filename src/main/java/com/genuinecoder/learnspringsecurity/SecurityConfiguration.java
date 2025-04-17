@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -19,6 +20,9 @@ public class SecurityConfiguration {
 
     @Autowired
     private MyUserDetailService userDetailService;
+
+    @Autowired
+    private AuthenticationSuccessHandler successHandler; // Inject the custom AuthenticationSuccessHandler
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -31,8 +35,8 @@ public class SecurityConfiguration {
                                 "/register/**",
                                 "/login",
                                 "/static/**",
-                                "/favicon.ico",  // Autorise explicitement le favicon
-                                "/error",        // Autorise la page d'erreur
+                                "/favicon.ico",  // Explicitly allow favicon
+                                "/error",        // Allow error page
                                 "/plan-de-test/**"
                         ).permitAll()
                         .requestMatchers("/chef-projet/**").hasRole("CHEF_PROJET")
@@ -43,8 +47,8 @@ public class SecurityConfiguration {
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
-                        .usernameParameter("email")  // Utilise 'email' comme paramètre
-                        .defaultSuccessUrl("/home", true)
+                        .usernameParameter("email")  // Use 'email' as parameter
+                        .successHandler(successHandler)  // Use custom success handler
                         .failureUrl("/login?error")
                         .permitAll()
                 )
@@ -68,12 +72,12 @@ public class SecurityConfiguration {
         return new PasswordEncoder() {
             @Override
             public String encode(CharSequence rawPassword) {
-                return rawPassword.toString(); // Retourne le mot de passe tel quel
+                return rawPassword.toString(); // Return the raw password
             }
 
             @Override
             public boolean matches(CharSequence rawPassword, String encodedPassword) {
-                // Compare les chaînes directement
+                // Compare the strings directly
                 return rawPassword.toString().equals(encodedPassword);
             }
         };

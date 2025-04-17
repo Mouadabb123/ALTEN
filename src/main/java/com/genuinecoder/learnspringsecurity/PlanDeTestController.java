@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,21 +31,21 @@ public class PlanDeTestController {
     // Afficher le formulaire de création
     @GetMapping("/nouveau")
     public String showCreationForm(Model model, Authentication authentication) {
-        MyUser currentUser = (MyUser) authentication.getPrincipal();
+        String email = authentication.getName();
+        MyUser currentUser = myUserRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
-        if (currentUser.getRole() != MyUser.Role.TEST_LEADER) {
-            throw new AccessDeniedException("Seuls les Test Leaders peuvent créer des plans de test");
+        List<PlanDeTest> plans = planDeTestRepository.findByTestLeadsContaining(currentUser);
+        if (plans == null) {
+            plans = new ArrayList<>(); // Ensure plans is never null
         }
-        List<PlanDeTest> plans = planDeTestRepository.findAll();
         model.addAttribute("plans", plans);
 
-        // Récupérer tous les Test Leaders disponibles (sauf l'utilisateur courant)
         List<MyUser> testLeaders = myUserRepository.findByRole(MyUser.Role.TEST_LEADER);
-        testLeaders.remove(currentUser); // Retirer l'utilisateur courant de la liste
-
+        testLeaders.remove(currentUser);
         model.addAttribute("testLeaders", testLeaders);
 
-        return "home_test_leade";
+        return "home_test_leader";
     }
 
     // Créer un nouveau plan de test
@@ -77,19 +78,20 @@ public class PlanDeTestController {
         planDeTestRepository.save(planDeTest);
 
         redirectAttributes.addFlashAttribute("success", "Plan de test créé avec succès");
-        return "redirect:/test-leader/home";
+        return "redirect:/plan-de-test/liste";  // Changed redirect to /plan-de-test/liste
     }
 
     // Lister tous les plans de test d'un Test Leader
     @GetMapping("/liste")
     public String listerPlansDeTest(Model model, Authentication authentication) {
-        MyUser currentUser = (MyUser) authentication.getPrincipal();
+        String email = authentication.getName(); // ← pas de cast ici
+        MyUser currentUser = myUserRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
         if (currentUser.getRole() != MyUser.Role.TEST_LEADER) {
             throw new AccessDeniedException("Accès réservé aux Test Leaders");
         }
 
-        // Récupérer tous les plans où l'utilisateur est un des Test Leaders
         List<PlanDeTest> plans = planDeTestRepository.findByTestLeadsContaining(currentUser);
         model.addAttribute("plans", plans);
 
@@ -102,7 +104,9 @@ public class PlanDeTestController {
         PlanDeTest plan = planDeTestRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Plan de test invalide: " + id));
 
-        MyUser currentUser = (MyUser) authentication.getPrincipal();
+        String email = authentication.getName();
+        MyUser currentUser = myUserRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
         // Vérifier que l'utilisateur a accès à ce plan
         if (!plan.getTestLeads().contains(currentUser)) {
@@ -119,7 +123,9 @@ public class PlanDeTestController {
         PlanDeTest plan = planDeTestRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Plan de test invalide: " + id));
 
-        MyUser currentUser = (MyUser) authentication.getPrincipal();
+        String email = authentication.getName(); // ← Récupère l'email
+        MyUser currentUser = myUserRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
         if (!plan.getTestLeads().contains(currentUser)) {
             throw new AccessDeniedException("Vous n'avez pas le droit de modifier ce plan");
@@ -127,7 +133,6 @@ public class PlanDeTestController {
 
         model.addAttribute("plan", plan);
 
-        // Récupérer tous les Test Leaders disponibles
         List<MyUser> allTestLeaders = myUserRepository.findByRole(MyUser.Role.TEST_LEADER);
         model.addAttribute("testLeaders", allTestLeaders);
 
@@ -146,22 +151,25 @@ public class PlanDeTestController {
         PlanDeTest plan = planDeTestRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Plan de test invalide: " + id));
 
-        MyUser currentUser = (MyUser) authentication.getPrincipal();
+        // ✅ Récupérer l'utilisateur connecté de manière sûre
+        String email = authentication.getName();
+        MyUser currentUser = myUserRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
         if (!plan.getTestLeads().contains(currentUser)) {
             throw new AccessDeniedException("Vous n'avez pas le droit de modifier ce plan");
         }
 
-        // Mettre à jour les champs de base
+        // ✅ Mettre à jour les champs
         plan.setTitre(planDetails.getTitre());
         plan.setDescription(planDetails.getDescription());
         plan.setOutils(planDetails.getOutils());
         plan.setCommentaire(planDetails.getCommentaire());
 
-        // Mettre à jour les Test Leaders associés si des sélections ont été faites
+        // ✅ Mettre à jour les Test Leaders associés
         if (selectedLeadersIds != null && !selectedLeadersIds.isEmpty()) {
             Set<MyUser> testLeaders = new HashSet<>();
-            testLeaders.add(currentUser); // Garder l'utilisateur courant
+            testLeaders.add(currentUser);
 
             List<MyUser> selectedLeaders = myUserRepository.findAllById(selectedLeadersIds);
             testLeaders.addAll(selectedLeaders);
@@ -172,6 +180,35 @@ public class PlanDeTestController {
         planDeTestRepository.save(plan);
 
         redirectAttributes.addFlashAttribute("success", "Plan de test mis à jour avec succès");
-        return "redirect:/plan-de-test/" + id;
+        return "redirect:/plan-de-test/liste";
     }
+
+
+
+    @GetMapping("/{id}/supprimer")
+    public String deletePlanDeTest(@PathVariable Long id, Authentication authentication, RedirectAttributes redirectAttributes) {
+        // Retrieve the plan by its ID
+        PlanDeTest plan = planDeTestRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Plan de test invalide: " + id));
+
+        // Get the currently authenticated user
+        String email = authentication.getName();
+        MyUser currentUser = myUserRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
+
+        // Verify if the current user is one of the test leaders associated with the plan
+        if (!plan.getTestLeads().contains(currentUser)) {
+            throw new AccessDeniedException("Vous n'avez pas le droit de supprimer ce plan de test");
+        }
+
+        // Delete the plan from the database
+        planDeTestRepository.delete(plan);
+
+        // Add a flash attribute to show a success message
+        redirectAttributes.addFlashAttribute("success", "Plan de test supprimé avec succès");
+
+        // Redirect back to the list of plans
+        return "redirect:/plan-de-test/liste";
+    }
+
 }
