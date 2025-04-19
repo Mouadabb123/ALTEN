@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Liste des Plans de Test</title>
@@ -146,21 +147,28 @@
 <body>
 
 <!-- Sidebar -->
+<!-- Sidebar -->
 <div class="sidebar d-flex flex-column">
     <h4>Test Lead</h4>
-    <a href="#planTest" class="active"><i class="bi bi-list-task me-2"></i>Plan de Test</a>
-    <a href="#planningTest"><i class="bi bi-calendar-event me-2"></i>Planning de Test</a>
-    <a href="#historique"><i class="bi bi-clock-history me-2"></i>Historique</a>
+    <a href="/plan-de-test/liste" >
+       <i class="bi bi-list-task me-2"></i>Plan de Test
+    </a>
+    <a href="/planning-de-test/liste" >
+       <i class="bi bi-calendar-event me-2"></i>Planning de Test
+    </a>
+    <a href="#historique" ><i class="bi bi-clock-history me-2"></i>Historique  </a>
 
     <div class="logout-btn">
-        <a href="/logout" class="btn btn-outline-light w-100"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
+        <a href="/logout" class="btn btn-outline-light w-100">
+            <i class="bi bi-box-arrow-right"></i> Déconnexion
+        </a>
     </div>
 </div>
 
 <!-- Content -->
 <div class="content">
     <div class="main-container">
-        <h2>Mes Plans de Test</h2>
+        <h2>Mon Plan de Test</h2>
 
         <div th:if="${plans.isEmpty()}">
             <p class="text-muted">Aucun plan de test disponible.</p>
@@ -169,13 +177,13 @@
 
 
         <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#ajouterPlanModal">
-            <i class="bi bi-plus-circle"></i> Ajouter un plan de test
+            <i class="bi bi-plus-circle"></i> Ajouter un cas de test
         </button>
 
         <!-- Search Bar -->
         <div class="search-container">
             <i class="bi bi-search search-icon"></i>
-            <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un plan de test...">
+            <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un cas de test...">
         </div>
 
         <table class="table table-striped" id="plansTable" th:if="${not #lists.isEmpty(plans)}">
@@ -185,6 +193,7 @@
                 <th data-sort="string">Titre <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
                 <th data-sort="string">Description <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
                 <th data-sort="string">Outils <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
+                <th data-sort="string">Testeur affecté <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
                 <th>Actions</th>
             </tr>
             </thead>
@@ -194,6 +203,11 @@
                 <td th:text="${plan.titre}"></td>
                 <td th:text="${plan.description}"></td>
                 <td th:text="${plan.outils}"></td>
+                <td>
+                    <span th:each="testeur : ${plan.testeursAffectes}"
+                          th:text="${testeur.prenom} + ' ' + ${testeur.nom}"
+                          class="badge bg-info me-1"></span>
+                </td>
                 <td>
                     <!-- Modifier Icon -->
                     <a th:href="@{'/plan-de-test/' + ${plan.id} + '/modifier'}" class="btn btn-sm btn-warning" title="Modifier">
@@ -246,22 +260,24 @@
                             </div>
                         </div>
 
+                        <!-- Nouvelle section pour les testeurs -->
                         <div class="mb-3">
-                            <label class="form-label">Test Leaders associés</label>
-                            <div th:each="user : ${testLeaders}">
+                            <label class="form-label">Testeurs affectés</label>
+                            <div th:each="testeur : ${testeurs}">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" th:id="'leader_' + ${user.id}"
-                                           th:value="${user.id}" name="selectedLeaders">
-                                    <label class="form-check-label" th:for="'leader_' + ${user.id}">
-                                        <span th:text="${user.prenom + ' ' + user.nom}">Nom Prénom</span>
+                                    <input class="form-check-input" type="checkbox" th:id="'testeur_' + ${testeur.id}"
+                                           th:value="${testeur.id}" name="selectedTesteurs"
+                                           th:checked="${plan.testeursAffectes.contains(testeur)}">
+                                    <label class="form-check-label" th:for="'testeur_' + ${testeur.id}">
+                                        <span th:text="${testeur.prenom + ' ' + testeur.nom}"></span>
                                     </label>
                                 </div>
                             </div>
                         </div>
-                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                         <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </div>
                     </div>
                 </form>
             </div>

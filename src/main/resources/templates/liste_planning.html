@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des Plannings de Test</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        /* Sidebar Styles */
+        .sidebar {
+            height: 100vh;
+            width: 250px;
+            background-color: #212529;
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 2rem 1rem;
+        }
+
+        .sidebar h4 {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar a {
+            color: white;
+            display: block;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background-color: #343a40;
+        }
+
+        .logout-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 2rem;
+        }
+
+        /* Styling for the main content container */
+        .main-container {
+            background-color: white;
+            padding: 3rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-container h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+
+        .table {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table th, .table td {
+            padding: 12px 15px;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f9f9f9;
+        }
+
+        .modal-content {
+            border-radius: 8px;
+        }
+
+        .modal-header, .modal-footer {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .modal-header h5 {
+            color: #333;
+        }
+
+        /* Styles pour le tri et la recherche */
+        .sort-icon {
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .search-container input {
+            padding-left: 40px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        .table th {
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        /* Animation pour indiquer que les plans sont filtrés */
+        @keyframes highlight {
+            0% { background-color: #fff2cc; }
+            100% { background-color: transparent; }
+        }
+
+        .highlight-row {
+            animation: highlight 1.5s ease;
+        }
+    </style>
+</head>
+<body>
+<!-- Sidebar similaire à votre template existant -->
+<div class="sidebar d-flex flex-column">
+    <h4>Test Lead</h4>
+    <a href="/plan-de-test/liste"><i class="bi bi-list-task me-2"></i>Plan de Test</a>
+    <a href="/planning-de-test/liste" class="active"><i class="bi bi-calendar-event me-2"></i>Planning de Test</a>
+    <a href="/historique"><i class="bi bi-clock-history me-2"></i>Historique planning de test</a>
+    <div class="logout-btn">
+        <a href="/logout" class="btn btn-outline-light w-100"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
+    </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+    <div class="main-container">
+        <h2>Mes Plannings de Test</h2>
+
+        <div th:if="${plannings.isEmpty()}">
+            <p class="text-muted">Aucun planning de test disponible.</p>
+        </div>
+
+        <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#ajouterPlanningModal">
+            <i class="bi bi-plus-circle"></i> Ajouter une tache
+        </button>
+
+
+
+        <table class="table table-striped" id="planningsTable" th:if="${not #lists.isEmpty(plannings)}">
+            <thead>
+            <tr>
+                <th data-sort="numeric">ID</th>
+                <th data-sort="string">Tâche</th>
+                <th data-sort="string">Date Début</th>
+                <th data-sort="string">Date Fin</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="planning : ${plannings}">
+                <td th:text="${planning.id}"></td>
+                <td th:text="${planning.tache}"></td>
+                <td th:text="${planning.dateDebut}"></td>
+                <td th:text="${planning.dateFin}"></td>
+                <td>
+                    <a th:href="@{'/planning-de-test/' + ${planning.id} + '/modifier'}" class="btn btn-sm btn-warning">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a th:href="@{'/planning-de-test/' + ${planning.id} + '/supprimer'}" class="btn btn-sm btn-danger"
+                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce planning ?');">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal pour ajouter un planning -->
+    <div class="modal fade" id="ajouterPlanningModal" tabindex="-1" aria-labelledby="ajouterPlanningModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ajouterPlanningModalLabel">Nouveau Planning de Test</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form th:action="@{/planning-de-test/creer}" method="post">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="tache" class="form-label">Tâche</label>
+                            <input type="text" class="form-control" id="tache" name="tache" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="dateDebut" class="form-label">Date Début</label>
+                                <input type="date" class="form-control" id="dateDebut" name="dateDebut" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="dateFin" class="form-label">Date Fin</label>
+                                <input type="date" class="form-control" id="dateFin" name="dateFin" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="commentaire" class="form-label">Commentaire</label>
+                            <textarea class="form-control" id="commentaire" name="commentaire" rows="3" required></textarea>
+                        </div>
+
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Script de recherche/tri similaire à votre template existant -->
+</body>
+</html>

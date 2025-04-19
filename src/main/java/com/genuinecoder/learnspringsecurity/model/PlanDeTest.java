@@ -3,6 +3,7 @@ package com.genuinecoder.learnspringsecurity.model;
 
 import jakarta.persistence.*;
 import java.util.Set;
+import java.util.HashSet;
 
 @Entity
 @Table(name = "plan_de_test")
@@ -37,7 +38,18 @@ public class PlanDeTest {
             joinColumns = @JoinColumn(name = "plan_id"),
             inverseJoinColumns = @JoinColumn(name = "test_lead_id")
     )
+
+
     private Set<MyUser> testLeads;
+
+    // Ajoutez cette nouvelle relation pour les testeurs
+    @ManyToMany
+    @JoinTable(
+            name = "plan_testeurs",
+            joinColumns = @JoinColumn(name = "plan_id"),
+            inverseJoinColumns = @JoinColumn(name = "testeur_id")
+    )
+    private Set<MyUser> testeursAffectes = new HashSet<>();
 
     public PlanDeTest(Long id, String titre, String description, String outils, String commentaire) {
         this.id = id;
@@ -89,6 +101,13 @@ public class PlanDeTest {
         Commentaire = commentaire;
     }
 
+    public Set<MyUser> getTesteursAffectes() {
+        return testeursAffectes;
+    }
+
+    public void setTesteursAffectes(Set<MyUser> testeursAffectes) {
+        this.testeursAffectes = testeursAffectes;
+    }
     @Override
     public String toString() {
         return "PlanDeTest{" +

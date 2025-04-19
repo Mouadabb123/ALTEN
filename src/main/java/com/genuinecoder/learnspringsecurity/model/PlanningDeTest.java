@@ -1,0 +1,144 @@
+package com.genuinecoder.learnspringsecurity.model;
+
+import jakarta.persistence.*;
+
+import java.util.Set;
+
+import java.time.LocalDateTime;
+@Entity
+@Table(name = "Planning_De_Test")
+public class PlanningDeTest {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String tache;
+
+    @Column(nullable = false)
+    private String DateDebut;
+
+    @Column(nullable = false)
+    private String DateFin;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String commentaire;
+
+
+    @Column(name = "date_creation", updatable = false)
+    private LocalDateTime dateCreation;
+
+    @Column(name = "date_modification")
+    private LocalDateTime dateModification;
+
+    @PrePersist
+    protected void onCreate() {
+        this.dateCreation = LocalDateTime.now();
+        this.dateModification = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.dateModification = LocalDateTime.now();
+    }
+
+    // Relation ManyToMany avec filtrage implicite des TEST_LEADER
+    @ManyToMany
+    @JoinTable(
+            name = "planning_test_leads", // Table de jointure dédiée
+            joinColumns = @JoinColumn(name = "planning_id"),
+            inverseJoinColumns = @JoinColumn(name = "test_lead_id")
+    )
+    private Set<MyUser> testLeads; // Seuls les MyUser avec role=TEST_LEADER seront associés
+
+    public PlanningDeTest(Long id, String tache, String dateDebut, String dateFin, String commentaire, LocalDateTime dateCreation, LocalDateTime dateModification, Set<MyUser> testLeads) {
+        this.id = id;
+        this.tache = tache;
+        DateDebut = dateDebut;
+        DateFin = dateFin;
+        this.commentaire = commentaire;
+        this.dateCreation = dateCreation;
+        this.dateModification = dateModification;
+        this.testLeads = testLeads;
+    }
+
+    public PlanningDeTest() {}
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTache() {
+        return tache;
+    }
+
+    public void setTache(String tache) {
+        this.tache = tache;
+    }
+
+    public String getDateDebut() {
+        return DateDebut;
+    }
+
+    public void setDateDebut(String dateDebut) {
+        DateDebut = dateDebut;
+    }
+
+    public String getDateFin() {
+        return DateFin;
+    }
+
+    public void setDateFin(String dateFin) {
+        DateFin = dateFin;
+    }
+
+    public String getCommentaire() {
+        return commentaire;
+    }
+
+    public void setCommentaire(String commentaire) {
+        this.commentaire = commentaire;
+    }
+
+    public Set<MyUser> getTestLeads() {
+        return testLeads;
+    }
+
+    public void setTestLeads(Set<MyUser> testLeads) {
+        this.testLeads = testLeads;
+    }
+
+    public LocalDateTime getDateCreation() {
+        return dateCreation;
+    }
+
+    public void setDateCreation(LocalDateTime dateCreation) {
+        this.dateCreation = dateCreation;
+    }
+
+    public LocalDateTime getDateModification() {
+        return dateModification;
+    }
+
+    public void setDateModification(LocalDateTime dateModification) {
+        this.dateModification = dateModification;
+    }
+
+    @Override
+    public String toString() {
+        return "PlanningDeTest{" +
+                "id=" + id +
+                ", tache='" + tache + '\'' +
+                ", DateDebut='" + DateDebut + '\'' +
+                ", DateFin='" + DateFin + '\'' +
+                ", commentaire='" + commentaire + '\'' +
+                ", dateCreation=" + dateCreation +
+                ", dateModification=" + dateModification +
+                ", testLeads=" + testLeads +
+                '}';
+    }
+}

@@ -139,13 +139,13 @@
     </script>
 
     <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#ajouterPlanModal">
-      <i class="bi bi-plus-circle"></i> Ajouter un plan de test
+      <i class="bi bi-plus-circle"></i> Ajouter un cas de test
     </button>
   </div>
 
   <!-- Deuxième section: Tableau des Plans de Test -->
   <div class="card">
-    <h3 class="mb-4">Mes Plans de Test</h3>
+    <h3 class="mb-4">Mon plan de test</h3>
 
     <div th:if="${plans != null and plans.isEmpty()}">
       <p class="text-muted">Aucun plan de test disponible.</p>
@@ -156,7 +156,7 @@
         <thead>
         <tr>
           <th>ID</th>
-          <th>Titre</th>
+          <th>Cas de test</th>
           <th>Description</th>
           <th>Outils</th>
           <th>Actions</th>

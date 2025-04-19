@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Historique des Actions</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        /* Sidebar Styles */
+        .sidebar {
+            height: 100vh;
+            width: 250px;
+            background-color: #212529;
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 2rem 1rem;
+        }
+
+        .sidebar h4 {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar a {
+            color: white;
+            display: block;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background-color: #343a40;
+        }
+
+        .logout-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 2rem;
+        }
+
+        /* Styling for the main content container */
+        .main-container {
+            background-color: white;
+            padding: 3rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-container h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+
+        .table {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table th, .table td {
+            padding: 12px 15px;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f9f9f9;
+        }
+
+        .modal-content {
+            border-radius: 8px;
+        }
+
+        .modal-header, .modal-footer {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .modal-header h5 {
+            color: #333;
+        }
+
+        /* Styles pour le tri et la recherche */
+        .sort-icon {
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .search-container input {
+            padding-left: 40px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        .table th {
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        /* Animation pour indiquer que les plans sont filtrés */
+        @keyframes highlight {
+            0% { background-color: #fff2cc; }
+            100% { background-color: transparent; }
+        }
+
+        .highlight-row {
+            animation: highlight 1.5s ease;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar (identique à votre template existant) -->
+<div class="sidebar d-flex flex-column">
+    <a href="/plan-de-test/liste"><i class="bi bi-list-task me-2"></i>Plan de Test</a>
+    <a href="/planning-de-test/liste" class="active"><i class="bi bi-calendar-event me-2"></i>Planning de Test</a>
+    <a href="/historique" class="active">
+        <i class="bi bi-clock-history me-2"></i>Historique
+    </a>
+    <!-- ... -->
+</div>
+
+<!-- Content -->
+<div class="content">
+    <div class="main-container">
+        <h2><i class="bi bi-clock-history me-2"></i> Historique des Actions</h2>
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Action</th>
+                    <th>Auteur</th>
+                    <th>Détails</th>
+                    <th>Planning</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="entry : ${historique}">
+                    <td th:text="${#temporals.format(entry.dateAction, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td>
+                            <span th:switch="${entry.action}">
+                                <span th:case="'CREATION'" class="badge bg-success">Création</span>
+                                <span th:case="'MODIFICATION'" class="badge bg-warning">Modification</span>
+                                <span th:case="'SUPPRESSION'" class="badge bg-danger">Suppression</span>
+                            </span>
+                    </td>
+                    <td>
+                        <span th:text="${entry.utilisateur.prenom + ' ' + entry.utilisateur.nom}"></span>
+                        <small class="text-muted d-block" th:text="${entry.utilisateur.email}"></small>
+                    </td>
+                    <td th:text="${entry.details}"></td>
+                    <td>
+                        <a th:if="${entry.action != 'SUPPRESSION'}"
+                           //th:href="@{'/planning-de-test/historique/' + ${entry.planning.id}}"
+                           th:text="${entry.planning.id}">
+                        </a>
+                        <span th:if="${entry.action == 'SUPPRESSION'}" th:text="${entry.details}"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

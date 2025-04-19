@@ -35,11 +35,15 @@ public class PlanDeTestController {
         MyUser currentUser = myUserRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
+
+        List<MyUser> testeurs = myUserRepository.findByRole(MyUser.Role.TESTEUR);
         List<PlanDeTest> plans = planDeTestRepository.findByTestLeadsContaining(currentUser);
         if (plans == null) {
             plans = new ArrayList<>(); // Ensure plans is never null
         }
+        model.addAttribute("testeurs", testeurs); // Nouveau
         model.addAttribute("plans", plans);
+
 
         List<MyUser> testLeaders = myUserRepository.findByRole(MyUser.Role.TEST_LEADER);
         testLeaders.remove(currentUser);
@@ -53,6 +57,7 @@ public class PlanDeTestController {
     public String creerPlanDeTest(
             @ModelAttribute PlanDeTest planDeTest,
             @RequestParam(value = "selectedLeaders", required = false) List<Long> selectedLeadersIds,
+            @RequestParam(value = "selectedTesteurs", required = false) List<Long> selectedTesteursIds, // Nouveau
             Authentication authentication,
             RedirectAttributes redirectAttributes) {
 
@@ -72,6 +77,11 @@ public class PlanDeTestController {
         if (selectedLeadersIds != null && !selectedLeadersIds.isEmpty()) {
             List<MyUser> selectedLeaders = myUserRepository.findAllById(selectedLeadersIds);
             testLeaders.addAll(selectedLeaders);
+        }
+        // Gestion des testeurs affectés (nouveau)
+        if (selectedTesteursIds != null && !selectedTesteursIds.isEmpty()) {
+            Set<MyUser> testeursAffectes = new HashSet<>(myUserRepository.findAllById(selectedTesteursIds));
+            planDeTest.setTesteursAffectes(testeursAffectes);
         }
 
         planDeTest.setTestLeads(testLeaders);
@@ -97,6 +107,7 @@ public class PlanDeTestController {
 
         return "liste_plans";
     }
+
 
     // Afficher un plan de test spécifique
     @GetMapping("/{id}")
@@ -130,8 +141,10 @@ public class PlanDeTestController {
         if (!plan.getTestLeads().contains(currentUser)) {
             throw new AccessDeniedException("Vous n'avez pas le droit de modifier ce plan");
         }
-
+        // Ajoutez la liste des testeurs disponibles
+        List<MyUser> testeurs = myUserRepository.findByRole(MyUser.Role.TESTEUR);
         model.addAttribute("plan", plan);
+        model.addAttribute("testeurs", testeurs);
 
         List<MyUser> allTestLeaders = myUserRepository.findByRole(MyUser.Role.TEST_LEADER);
         model.addAttribute("testLeaders", allTestLeaders);
@@ -145,6 +158,7 @@ public class PlanDeTestController {
             @PathVariable Long id,
             @ModelAttribute PlanDeTest planDetails,
             @RequestParam(value = "selectedLeaders", required = false) List<Long> selectedLeadersIds,
+            @RequestParam(value = "selectedTesteurs", required = false) List<Long> selectedTesteursIds, // Nouveau
             Authentication authentication,
             RedirectAttributes redirectAttributes) {
 
@@ -166,6 +180,12 @@ public class PlanDeTestController {
         plan.setOutils(planDetails.getOutils());
         plan.setCommentaire(planDetails.getCommentaire());
 
+        // Mise à jour des testeurs affectés (nouveau)
+        if (selectedTesteursIds != null) {
+            Set<MyUser> testeursAffectes = new HashSet<>(myUserRepository.findAllById(selectedTesteursIds));
+            plan.setTesteursAffectes(testeursAffectes);
+        }
+
         // ✅ Mettre à jour les Test Leaders associés
         if (selectedLeadersIds != null && !selectedLeadersIds.isEmpty()) {
             Set<MyUser> testLeaders = new HashSet<>();
@@ -176,7 +196,7 @@ public class PlanDeTestController {
 
             plan.setTestLeads(testLeaders);
         }
-
+        
         planDeTestRepository.save(plan);
 
         redirectAttributes.addFlashAttribute("success", "Plan de test mis à jour avec succès");
