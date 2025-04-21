@@ -23,7 +23,7 @@ public class PlanningDeTestController {
     private HistoriqueService historiqueService;
 
     @Autowired
-    private HistoriquePlanningRepository HistoriqueRepo ;
+    private HistoriquePlanningRepository HistoriqueRepo;
 
     @Autowired
     private PlanningDeTestRepository planningDeTestRepository;
@@ -38,8 +38,12 @@ public class PlanningDeTestController {
         MyUser currentUser = myUserRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
+        // Vérifier que l'utilisateur est un TEST_LEADER
+        if (currentUser.getRole() != MyUser.Role.TEST_LEADER) {
+            throw new AccessDeniedException("Accès réservé aux Test Leaders");
+        }
 
-        List<PlanningDeTest> plannings = planningDeTestRepository.findByTestLeadsContaining(currentUser);
+        List<PlanningDeTest> plannings = planningDeTestRepository.findAll();
         if (plannings == null) {
             plannings = new ArrayList<>();
         }
@@ -48,8 +52,6 @@ public class PlanningDeTestController {
         List<MyUser> testLeaders = myUserRepository.findByRole(MyUser.Role.TEST_LEADER);
         testLeaders.remove(currentUser);
         model.addAttribute("testLeaders", testLeaders);
-
-
 
         return "home_test_leader_planning";
     }
@@ -88,7 +90,7 @@ public class PlanningDeTestController {
         return "redirect:/planning-de-test/liste";
     }
 
-    // Lister tous les plannings de test d'un Test Leader
+    // Lister tous les plannings de test
     @GetMapping("/liste")
     public String listerPlanningsDeTest(Model model, Authentication authentication) {
         String email = authentication.getName();
@@ -99,9 +101,8 @@ public class PlanningDeTestController {
             throw new AccessDeniedException("Accès réservé aux Test Leaders");
         }
 
-        List<PlanningDeTest> plannings = planningDeTestRepository.findByTestLeadsContaining(currentUser);
+        List<PlanningDeTest> plannings = planningDeTestRepository.findAll();
         model.addAttribute("plannings", plannings);
-
 
         return "liste_planning";
     }
@@ -116,8 +117,9 @@ public class PlanningDeTestController {
         MyUser currentUser = myUserRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
-        if (!planning.getTestLeads().contains(currentUser)) {
-            throw new AccessDeniedException("Vous n'avez pas accès à ce planning de test");
+        // Modifié: Autoriser l'accès à tous les Test Leaders
+        if (currentUser.getRole() != MyUser.Role.TEST_LEADER) {
+            throw new AccessDeniedException("Accès réservé aux Test Leaders");
         }
 
         model.addAttribute("planning", planning);
@@ -134,8 +136,9 @@ public class PlanningDeTestController {
         MyUser currentUser = myUserRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
-        if (!planning.getTestLeads().contains(currentUser)) {
-            throw new AccessDeniedException("Vous n'avez pas le droit de modifier ce planning");
+        // Modifié: Autoriser la modification à tous les Test Leaders
+        if (currentUser.getRole() != MyUser.Role.TEST_LEADER) {
+            throw new AccessDeniedException("Seuls les Test Leaders peuvent modifier les plannings");
         }
 
         model.addAttribute("planning", planning);
@@ -162,8 +165,9 @@ public class PlanningDeTestController {
         MyUser currentUser = myUserRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
-        if (!planning.getTestLeads().contains(currentUser)) {
-            throw new AccessDeniedException("Vous n'avez pas le droit de modifier ce planning");
+        // Modifié: Autoriser la mise à jour à tous les Test Leaders
+        if (currentUser.getRole() != MyUser.Role.TEST_LEADER) {
+            throw new AccessDeniedException("Seuls les Test Leaders peuvent modifier les plannings");
         }
 
         planning.setTache(planningDetails.getTache());
@@ -173,7 +177,7 @@ public class PlanningDeTestController {
 
         if (selectedLeadersIds != null && !selectedLeadersIds.isEmpty()) {
             Set<MyUser> testLeaders = new HashSet<>();
-            testLeaders.add(currentUser);
+            testLeaders.add(currentUser); // Toujours ajouter l'utilisateur courant
 
             List<MyUser> selectedLeaders = myUserRepository.findAllById(selectedLeadersIds);
             testLeaders.addAll(selectedLeaders);
@@ -183,8 +187,8 @@ public class PlanningDeTestController {
 
         planningDeTestRepository.save(planning);
 
-        historiqueService.enregistrerAction(planning, currentUser, "CREATION",
-                "Création du planning " + planning.getTache());
+        historiqueService.enregistrerAction(planning, currentUser, "MODIFICATION",
+                "Modification du planning " + planning.getTache());
 
         redirectAttributes.addFlashAttribute("success", "Planning de test mis à jour avec succès");
         return "redirect:/planning-de-test/liste";
@@ -199,14 +203,15 @@ public class PlanningDeTestController {
         MyUser currentUser = myUserRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
-        if (!planning.getTestLeads().contains(currentUser)) {
-            throw new AccessDeniedException("Vous n'avez pas le droit de supprimer ce planning de test");
+        // Modifié: Autoriser la suppression à tous les Test Leaders
+        if (currentUser.getRole() != MyUser.Role.TEST_LEADER) {
+            throw new AccessDeniedException("Seuls les Test Leaders peuvent supprimer les plannings");
         }
 
         planningDeTestRepository.delete(planning);
 
-        historiqueService.enregistrerAction(planning, currentUser, "CREATION",
-                "Création du planning " + planning.getTache());
+        historiqueService.enregistrerAction(planning, currentUser, "SUPPRESSION",
+                "Suppression du planning " + planning.getTache());
 
         redirectAttributes.addFlashAttribute("success", "Planning de test supprimé avec succès");
         return "redirect:/planning-de-test/liste";

@@ -41,7 +41,7 @@ public class PlanDeTestController {
         model.addAttribute("plan", new PlanDeTest());
         model.addAttribute("plans", planDeTestRepository.findAll());
 
-        return "home_test_leader";
+        return "redirect:/plan-de-test/liste";
     }
 
     @PostMapping("/creer")
@@ -91,8 +91,14 @@ public class PlanDeTestController {
         }
 
         model.addAttribute("plans", planDeTestRepository.findAll());
+
+        // Fetch testeurs (users with TESTEUR role)
+        List<MyUser> testeurs = myUserRepository.findByRole(MyUser.Role.TESTEUR);
+        model.addAttribute("testeurs", testeurs);
+
         return "liste_plans";
     }
+
 
     @GetMapping("/{id}")
     public String afficherPlanDeTest(@PathVariable Long id, Model model) {
@@ -110,7 +116,8 @@ public class PlanDeTestController {
         MyUser currentUser = myUserRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
-        if (!plan.getTestLeads().contains(currentUser)) {
+        // Changed: Allow any test leader to modify
+        if (currentUser.getRole() != MyUser.Role.TEST_LEADER) {
             throw new AccessDeniedException("Vous n'avez pas le droit de modifier ce plan");
         }
 
@@ -135,7 +142,8 @@ public class PlanDeTestController {
         MyUser currentUser = myUserRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
-        if (!plan.getTestLeads().contains(currentUser)) {
+        // Changed: Allow any test leader to modify
+        if (currentUser.getRole() != MyUser.Role.TEST_LEADER) {
             throw new AccessDeniedException("Vous n'avez pas le droit de modifier ce plan");
         }
 
@@ -145,9 +153,14 @@ public class PlanDeTestController {
         plan.setOutils(planDetails.getOutils());
         plan.setCommentaire(planDetails.getCommentaire());
 
-        // Update test leaders
+        // Update test leaders - ensure current user is included if they're a test leader
         Set<MyUser> testLeaders = new HashSet<>();
+        if (plan.getTestLeads() != null) {
+            testLeaders.addAll(plan.getTestLeads());
+        }
+        // Add current user to testLeads if they're not already there
         testLeaders.add(currentUser);
+
         if (selectedLeadersIds != null) {
             testLeaders.addAll(myUserRepository.findAllById(selectedLeadersIds));
         }
@@ -173,7 +186,8 @@ public class PlanDeTestController {
         MyUser currentUser = myUserRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
-        if (!plan.getTestLeads().contains(currentUser)) {
+        // Changed: Allow any test leader to delete
+        if (currentUser.getRole() != MyUser.Role.TEST_LEADER) {
             throw new AccessDeniedException("Vous n'avez pas le droit de supprimer ce plan de test");
         }
 

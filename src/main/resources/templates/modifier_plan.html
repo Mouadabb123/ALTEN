@@ -24,7 +24,10 @@
         </div>
 
         <div class="card-body">
-            <form th:action="@{/plan-de-test/creer}" th:object="${plan}" method="post">
+            <form th:action="@{'/plan-de-test/' + ${plan.id} + '/modifier'}" th:object="${plan}" method="post">
+
+                <input type="hidden" th:field="*{id}" />
+
                 <div class="mb-3">
                     <label for="titre" class="form-label">
                         <i class="fas fa-heading me-1 text-primary"></i> Titre

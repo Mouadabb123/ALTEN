@@ -21,6 +21,10 @@
 
         <div class="card-body">
             <form th:action="@{'/planning-de-test/' + ${planning.id} + '/modifier'}" th:object="${planning}" method="post">
+
+                <!-- ✅ Hidden ID field -->
+                <input type="hidden" th:field="*{id}" />
+
                 <div class="mb-3">
                     <label for="tache" class="form-label">
                         <i class="fas fa-tasks me-1 text-primary"></i> Tâche
@@ -49,8 +53,6 @@
                     </label>
                     <textarea class="form-control" id="commentaire" th:field="*{commentaire}" rows="3" required></textarea>
                 </div>
-
-
 
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                     <button type="submit" class="btn btn-success">

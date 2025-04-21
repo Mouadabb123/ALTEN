@@ -265,9 +265,11 @@
                             <label class="form-label">Testeurs affectés</label>
                             <div th:each="testeur : ${testeurs}">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" th:id="'testeur_' + ${testeur.id}"
-                                           th:value="${testeur.id}" name="selectedTesteurs"
-                                           th:checked="${plan.testeursAffectes.contains(testeur)}">
+                                    <input class="form-check-input" type="checkbox"
+                                           th:id="'testeur_' + ${testeur.id}"
+                                           th:value="${testeur.id}"
+                                           name="selectedTesteurs">
+
                                     <label class="form-check-label" th:for="'testeur_' + ${testeur.id}">
                                         <span th:text="${testeur.prenom + ' ' + testeur.nom}"></span>
                                     </label>
