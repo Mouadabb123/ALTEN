@@ -1,6 +1,5 @@
 package com.genuinecoder.learnspringsecurity.model;
 
-
 import jakarta.persistence.*;
 import java.util.Set;
 import java.util.HashSet;
@@ -19,18 +18,10 @@ public class PlanDeTest {
     private String description;
 
     @Column(nullable = false)
-    private String Outils;
+    private String outils;
 
     @Column(nullable = false, columnDefinition = "TEXT")
-    private String Commentaire;
-
-    public Set<MyUser> getTestLeads() {
-        return testLeads;
-    }
-
-    public void setTestLeads(Set<MyUser> testLeads) {
-        this.testLeads = testLeads;
-    }
+    private String commentaire;
 
     @ManyToMany
     @JoinTable(
@@ -38,11 +29,8 @@ public class PlanDeTest {
             joinColumns = @JoinColumn(name = "plan_id"),
             inverseJoinColumns = @JoinColumn(name = "test_lead_id")
     )
+    private Set<MyUser> testLeads = new HashSet<>();
 
-
-    private Set<MyUser> testLeads;
-
-    // Ajoutez cette nouvelle relation pour les testeurs
     @ManyToMany
     @JoinTable(
             name = "plan_testeurs",
@@ -51,16 +39,17 @@ public class PlanDeTest {
     )
     private Set<MyUser> testeursAffectes = new HashSet<>();
 
-    public PlanDeTest(Long id, String titre, String description, String outils, String commentaire) {
-        this.id = id;
-        this.titre = titre;
-        this.description = description;
-        Outils = outils;
-        Commentaire = commentaire;
-    }
-
+    // Constructors
     public PlanDeTest() {}
 
+    public PlanDeTest(String titre, String description, String outils, String commentaire) {
+        this.titre = titre;
+        this.description = description;
+        this.outils = outils;
+        this.commentaire = commentaire;
+    }
+
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -86,19 +75,27 @@ public class PlanDeTest {
     }
 
     public String getOutils() {
-        return Outils;
+        return outils;
     }
 
     public void setOutils(String outils) {
-        Outils = outils;
+        this.outils = outils;
     }
 
     public String getCommentaire() {
-        return Commentaire;
+        return commentaire;
     }
 
     public void setCommentaire(String commentaire) {
-        Commentaire = commentaire;
+        this.commentaire = commentaire;
+    }
+
+    public Set<MyUser> getTestLeads() {
+        return testLeads;
+    }
+
+    public void setTestLeads(Set<MyUser> testLeads) {
+        this.testLeads = testLeads;
     }
 
     public Set<MyUser> getTesteursAffectes() {
@@ -108,14 +105,15 @@ public class PlanDeTest {
     public void setTesteursAffectes(Set<MyUser> testeursAffectes) {
         this.testeursAffectes = testeursAffectes;
     }
+
     @Override
     public String toString() {
         return "PlanDeTest{" +
                 "id=" + id +
                 ", titre='" + titre + '\'' +
                 ", description='" + description + '\'' +
-                ", Outils='" + Outils + '\'' +
-                ", Commentaire='" + Commentaire + '\'' +
+                ", outils='" + outils + '\'' +
+                ", commentaire='" + commentaire + '\'' +
                 '}';
     }
 }

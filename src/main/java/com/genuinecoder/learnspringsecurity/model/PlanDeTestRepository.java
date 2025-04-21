@@ -4,7 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface PlanDeTestRepository extends JpaRepository<PlanDeTest, Long> {
-
-    List<PlanDeTest> findByTestLeadsContaining(MyUser user);
-
+    List<PlanDeTest> findByTestLeadsContaining(MyUser user); // Kept for other use cases
+    List<PlanDeTest> findAll(); // New method to fetch all plans
 }
