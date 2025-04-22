@@ -26,8 +26,8 @@ public class MyUser {
     @Column(nullable = false)
     private Role role; // Utilisation d'un Enum
 
-    @Column(nullable = true) // Null pour CHEF_PROJET/TEST_LEADER
-    private Integer disponibilite; // Jours avant disponibilité
+    @Column(columnDefinition = "TINYINT(1) default 0")// Null pour CHEF_PROJET/TEST_LEADER
+    private Boolean disponibilite; // Jours avant disponibilité
 
     @Column(nullable = true) // Null pour CHEF_PROJET/TEST_LEADER
     private Integer experience; // Années d'expérience
@@ -102,11 +102,11 @@ public class MyUser {
         this.role = role;
     }
 
-    public Integer getDisponibilite() {
+    public Boolean getDisponibilite() {
         return disponibilite;
     }
 
-    public void setDisponibilite(Integer disponibilite) {
+    public void setDisponibilite(Boolean disponibilite) {
         this.disponibilite = disponibilite;
     }
 

@@ -3,7 +3,7 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Liste des Plans de Test</title>
+    <title>Gestion des Testeurs</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -142,85 +142,96 @@
         .highlight-row {
             animation: highlight 1.5s ease;
         }
+
+        .availability-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .available {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .unavailable {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
 <body>
 
 <!-- Sidebar -->
-<!-- Sidebar -->
 <div class="sidebar d-flex flex-column">
     <h4>Test Lead</h4>
-    <a href="/plan-de-test/liste" >
-       <i class="bi bi-list-task me-2"></i>Plan de Test
+    <a href="/plan-de-test/liste">
+        <i class="bi bi-list-task me-2"></i>Plan de Test
     </a>
-    <a href="/planning-de-test/liste" >
-       <i class="bi bi-calendar-event me-2"></i>Planning de Test
+    <a href="/planning-de-test/liste">
+        <i class="bi bi-calendar-event me-2"></i>Planning de Test
     </a>
-    <a href="/historique-plan" ><i class="bi bi-clock-history me-2"></i>Historique du plan de test </a>
-    <a href="/testeur/liste" ><i class="bi bi-people me-2"></i>Gestion des testeurs  </a>
-
-
-
+    <a href="/testeur/liste" class="active">
+        <i class="bi bi-people-fill me-2"></i>Gestion des Testeurs
+    </a>
+    <a href="/historique-plan"><i class="bi bi-clock-history me-2"></i>Historique</a>
 
     <div class="logout-btn">
         <a href="/logout" class="btn btn-outline-light w-100">
             <i class="bi bi-box-arrow-right"></i> Déconnexion
         </a>
     </div>
-
-
 </div>
 
 <!-- Content -->
 <div class="content">
     <div class="main-container">
-        <h2>Mon Plan de Test</h2>
+        <h2>Gestion des Testeurs</h2>
 
-        <div th:if="${plans.isEmpty()}">
-            <p class="text-muted">Aucun plan de test disponible.</p>
+        <div th:if="${testeurs.isEmpty()}">
+            <p class="text-muted">Aucun testeur disponible.</p>
         </div>
 
-
-
-        <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#ajouterPlanModal">
-            <i class="bi bi-plus-circle"></i> Ajouter un cas de test
+        <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#ajouterTesteurModal">
+            <i class="bi bi-plus-circle"></i> Ajouter un testeur
         </button>
 
         <!-- Search Bar -->
         <div class="search-container">
             <i class="bi bi-search search-icon"></i>
-            <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un cas de test...">
+            <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un testeur...">
         </div>
 
-        <table class="table table-striped" id="plansTable" th:if="${not #lists.isEmpty(plans)}">
+        <table class="table table-striped" id="testeursTable" th:if="${not #lists.isEmpty(testeurs)}">
             <thead>
             <tr>
                 <th data-sort="numeric">ID <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
-                <th data-sort="string">Titre <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
-                <th data-sort="string">Description <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
-                <th data-sort="string">Outils <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
-                <th data-sort="string">Testeur affecté <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
+                <th data-sort="string">Nom <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
+                <th data-sort="string">Prénom <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
+                <th data-sort="string">Email <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
+                <th data-sort="string">Disponibilité <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
+                <th data-sort="numeric">Expérience <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
                 <th>Actions</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="plan : ${plans}">
-                <td th:text="${plan.id}"></td>
-                <td th:text="${plan.titre}"></td>
-                <td th:text="${plan.description}"></td>
-                <td th:text="${plan.outils}"></td>
+            <tr th:each="testeur : ${testeurs}">
+                <td th:text="${testeur.id}"></td>
+                <td th:text="${testeur.nom}"></td>
+                <td th:text="${testeur.prenom}"></td>
+                <td th:text="${testeur.email}"></td>
                 <td>
-                    <span th:each="testeur : ${plan.testeursAffectes}"
-                          th:text="${testeur.prenom} + ' ' + ${testeur.nom}"
-                          class="badge bg-info me-1"></span>
+                    <span th:classappend="${testeur.disponibilite} ? 'availability-badge available' : 'availability-badge unavailable'"
+                          th:text="${testeur.disponibilite} ? 'Disponible' : 'Indisponible'"></span>
                 </td>
+                <td th:text="${testeur.experience} + ' ans'"></td>
                 <td>
                     <!-- Modifier Icon -->
-                    <a th:href="@{'/plan-de-test/' + ${plan.id} + '/modifier'}" class="btn btn-sm btn-warning" title="Modifier">
+                    <a th:href="@{'/testeur/' + ${testeur.id} + '/modifier'}" class="btn btn-sm btn-warning" title="Modifier">
                         <i class="bi bi-pencil"></i>
                     </a>
                     <!-- Delete Icon -->
-                    <a th:href="@{'/plan-de-test/' + ${plan.id} + '/supprimer'}" class="btn btn-sm btn-danger" title="Supprimer" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce plan de test ?');">
+                    <a th:href="@{'/testeur/' + ${testeur.id} + '/supprimer'}" class="btn btn-sm btn-danger" title="Supprimer" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce testeur ?');">
                         <i class="bi bi-trash"></i>
                     </a>
                 </td>
@@ -230,73 +241,56 @@
 
         <!-- Message quand aucun résultat de recherche -->
         <div id="noResultsMessage" class="alert alert-info mt-3 d-none">
-            Aucun plan de test ne correspond à votre recherche.
+            Aucun testeur ne correspond à votre recherche.
         </div>
     </div>
 
-    <!-- Modal pour ajouter un plan de test -->
-    <div class="modal fade" id="ajouterPlanModal" tabindex="-1" aria-labelledby="ajouterPlanModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+    <!-- Modal pour ajouter un testeur -->
+    <div class="modal fade" id="ajouterTesteurModal" tabindex="-1" aria-labelledby="ajouterTesteurModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="ajouterPlanModalLabel">Nouveau Plan de Test</h5>
+                    <h5 class="modal-title" id="ajouterTesteurModalLabel">Nouveau Testeur</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form th:action="@{/plan-de-test/creer}" method="post">
+                <form th:action="@{/testeur/creer}" method="post">
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="titre" class="form-label">Titre</label>
-                            <input type="text" class="form-control" id="titre" name="titre" required>
+                            <label for="nom" class="form-label">Nom</label>
+                            <input type="text" class="form-control" id="nom" name="nom" required>
                         </div>
 
                         <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                            <label for="prenom" class="form-label">Prénom</label>
+                            <input type="text" class="form-control" id="prenom" name="prenom" required>
                         </div>
 
-
-                            <div class="col-md-6 mb-3">
-                                <label for="outils" class="form-label">Outils utilisés</label>
-                                <select class="form-select" id="outils" name="outils" required>
-                                    <option value="Elliade">Elliade</option>
-                                    <option value="XF">XF</option>
-                                    <option value="GEOS">GEOS</option>
-                                    <option value="VCO CRONOS"> CRONOS</option>
-                                    <option value="IFast">Pleade</option>
-                                </select>
-                            </div>
-                            <!-- Champ optionnel pour préciser si "Autre" est sélectionné -->
-                            <div class="col-md-6 mb-3" id="autre-outil-container" >
-                                <label for="autre-outil" class="form-label">Précisez un autre outil</label>
-                                <input type="text" class="form-control" id="autre-outil" name="autreOutil">
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="commentaire" class="form-label">Commentaire</label>
-                                <input type="text" class="form-control" id="commentaire" name="commentaire" required>
-                            </div>
-                        </div>
-
-                        <!-- Nouvelle section pour les testeurs -->
                         <div class="mb-3">
-                            <label class="form-label">Testeurs affectés</label>
-                            <div th:each="testeur : ${testeurs}">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox"
-                                           th:id="'testeur_' + ${testeur.id}"
-                                           th:value="${testeur.id}"
-                                           name="selectedTesteurs">
-
-                                    <label class="form-check-label" th:for="'testeur_' + ${testeur.id}">
-                                        <span th:text="${testeur.prenom + ' ' + testeur.nom}"></span>
-                                    </label>
-                                </div>
-                            </div>
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
                         </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Mot de passe</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="disponibilite" class="form-label">Disponibilité</label>
+                            <select class="form-select" id="disponibilite" name="disponibilite" required>
+                                <option value="true">Disponible</option>
+                                <option value="false">Indisponible</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="experience" class="form-label">Expérience (années)</label>
+                            <input type="number" class="form-control" id="experience" name="experience" min="0" required>
+                        </div>
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                         <button type="submit" class="btn btn-primary">Enregistrer</button>
-                    </div>
                     </div>
                 </form>
             </div>
@@ -311,7 +305,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Référence au tableau et à l'input de recherche
-        const table = document.getElementById('plansTable');
+        const table = document.getElementById('testeursTable');
         const searchInput = document.getElementById('searchInput');
         const noResultsMessage = document.getElementById('noResultsMessage');
 
@@ -442,7 +436,6 @@
         }
     });
 </script>
-
 
 </body>
 </html>
