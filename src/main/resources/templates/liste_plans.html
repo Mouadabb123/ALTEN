@@ -156,7 +156,7 @@
     <a href="/planning-de-test/liste" >
        <i class="bi bi-calendar-event me-2"></i>Planning de Test
     </a>
-    <a href="#historique" ><i class="bi bi-clock-history me-2"></i>Historique  </a>
+    <a href="/historique-plan" ><i class="bi bi-clock-history me-2"></i>Historique  </a>
 
     <div class="logout-btn">
         <a href="/logout" class="btn btn-outline-light w-100">
@@ -248,10 +248,21 @@
                             <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
                         </div>
 
-                        <div class="row">
+
                             <div class="col-md-6 mb-3">
                                 <label for="outils" class="form-label">Outils utilisés</label>
-                                <input type="text" class="form-control" id="outils" name="outils" required>
+                                <select class="form-select" id="outils" name="outils" required>
+                                    <option value="Elliade">Elliade</option>
+                                    <option value="XF">XF</option>
+                                    <option value="GEOS">GEOS</option>
+                                    <option value="VCO CRONOS"> CRONOS</option>
+                                    <option value="IFast">Pleade</option>
+                                </select>
+                            </div>
+                            <!-- Champ optionnel pour préciser si "Autre" est sélectionné -->
+                            <div class="col-md-6 mb-3" id="autre-outil-container" >
+                                <label for="autre-outil" class="form-label">Précisez un autre outil</label>
+                                <input type="text" class="form-control" id="autre-outil" name="autreOutil">
                             </div>
 
                             <div class="col-md-6 mb-3">
@@ -425,6 +436,7 @@
         }
     });
 </script>
+
 
 </body>
 </html>

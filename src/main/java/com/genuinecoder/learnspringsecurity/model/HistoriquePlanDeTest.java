@@ -1,12 +1,11 @@
 package com.genuinecoder.learnspringsecurity.model;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "historique_planning")
-public class HistoriquePlanning {
+@Table(name = "historique_plan_de_test")
+public class HistoriquePlanDeTest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,40 +17,46 @@ public class HistoriquePlanning {
     private String nouvelleValeur;
 
     @ManyToOne
-    @JoinColumn(name = "planning_id" , nullable = true)
-    private PlanningDeTest planning;
+    @JoinColumn(name = "plan_id", nullable = false)
+    private PlanDeTest plan;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private MyUser utilisateur;
 
-
     private String action; // "CREATION", "MODIFICATION", "SUPPRESSION"
     private String details;
     private LocalDateTime dateAction;
 
-    public HistoriquePlanning(Long id, PlanningDeTest planning, MyUser utilisateur, String action, String details, LocalDateTime dateAction) {
-        this.id = id;
-        this.planning = planning;
+    // Constructeurs
+    public HistoriquePlanDeTest() {
+    }
+
+    public HistoriquePlanDeTest(PlanDeTest plan, MyUser utilisateur, String action, String details, LocalDateTime dateAction) {
+        this.plan = plan;
         this.utilisateur = utilisateur;
         this.action = action;
         this.details = details;
         this.dateAction = dateAction;
     }
 
-    public HistoriquePlanning(Long id, String ancienneValeur, String nouvelleValeur, PlanningDeTest planning, MyUser utilisateur, String action, String details, LocalDateTime dateAction) {
-        this.id = id;
+    public HistoriquePlanDeTest(String ancienneValeur, String nouvelleValeur, PlanDeTest plan, MyUser utilisateur, String action, String details, LocalDateTime dateAction) {
         this.ancienneValeur = ancienneValeur;
         this.nouvelleValeur = nouvelleValeur;
-        this.planning = planning;
+        this.plan = plan;
         this.utilisateur = utilisateur;
         this.action = action;
         this.details = details;
         this.dateAction = dateAction;
     }
 
-    public HistoriquePlanning() {
+    // Getters et Setters
+    public Long getId() {
+        return id;
+    }
 
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getAncienneValeur() {
@@ -70,20 +75,12 @@ public class HistoriquePlanning {
         this.nouvelleValeur = nouvelleValeur;
     }
 
-    public Long getId() {
-        return id;
+    public PlanDeTest getPlan() {
+        return plan;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public PlanningDeTest getPlanning() {
-        return planning;
-    }
-
-    public void setPlanning(PlanningDeTest planning) {
-        this.planning = planning;
+    public void setPlan(PlanDeTest plan) {
+        this.plan = plan;
     }
 
     public MyUser getUtilisateur() {
@@ -118,13 +115,11 @@ public class HistoriquePlanning {
         this.dateAction = dateAction;
     }
 
-
-
     @Override
     public String toString() {
-        return "HistoriquePlanning{" +
+        return "HistoriquePlanDeTest{" +
                 "id=" + id +
-                ", planning=" + planning +
+                ", plan=" + plan +
                 ", utilisateur=" + utilisateur +
                 ", action='" + action + '\'' +
                 ", details='" + details + '\'' +

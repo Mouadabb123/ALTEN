@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div th:if="${historique}">
+    <h2>Détails de l'action</h2>
+    <p>Action: <span th:text="${historique.action}"></span></p>
+    <p>Date: <span th:text="${historique.dateAction}"></span></p>
+    <p>Utilisateur: <span th:text="${historique.utilisateur.nom}"></span></p>
+
+    <h3>Détails du planning</h3>
+    <div th:if="${historique.planning}">
+        <p>Tâche: <span th:text="${historique.planning.tache}"></span></p>
+        <p>Date début: <span th:text="${historique.planning.dateDebut}"></span></p>
+        <p>Date fin: <span th:text="${historique.planning.dateFin}"></span></p>
+        <p>Commentaire: <span th:text="${historique.planning.commentaire}"></span></p>
+    </div>
+
+    <p>Détails supplémentaires: <span th:text="${historique.details}"></span></p>
+</div>
+</body>
+</html>

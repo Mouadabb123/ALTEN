@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Historique des Actions</title>
+    <title>Historique des Plans de Test</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -140,12 +140,12 @@
 </head>
 <body>
 
-<!-- Sidebar (identique à votre template existant) -->
+<!-- Sidebar -->
 <div class="sidebar d-flex flex-column">
     <a href="/plan-de-test/liste"><i class="bi bi-list-task me-2"></i>Plan de Test</a>
-    <a href="/planning-de-test/liste" class="active"><i class="bi bi-calendar-event me-2"></i>Planning de Test</a>
-    <a href="/historique" class="active">
-        <i class="bi bi-clock-history me-2"></i>Historique
+    <a href="/planning-de-test/liste"><i class="bi bi-calendar-event me-2"></i>Planning de Test</a>
+    <a href="/historique-plan" class="active">
+        <i class="bi bi-clock-history me-2"></i>Historique Plans
     </a>
     <!-- ... -->
 </div>
@@ -153,7 +153,7 @@
 <!-- Content -->
 <div class="content">
     <div class="main-container">
-        <h2><i class="bi bi-clock-history me-2"></i> Historique des Actions</h2>
+        <h2><i class="bi bi-clock-history me-2"></i> Historique des Plans de Test</h2>
 
         <div class="table-responsive">
             <table class="table table-striped">
@@ -169,19 +169,18 @@
                 <tr th:each="entry, iterStat : ${historique}">
                     <td th:text="${#temporals.format(entry.dateAction, 'dd/MM/yyyy HH:mm')}"></td>
                     <td>
-        <span th:switch="${entry.action}">
-            <span th:case="'CREATION'" class="badge bg-success">Création</span>
-            <span th:case="'MODIFICATION'" class="badge bg-warning">Modification</span>
-            <span th:case="'SUPPRESSION'" class="badge bg-danger">Suppression</span>
-        </span>
+                        <span th:switch="${entry.action}">
+                            <span th:case="'CREATION'" class="badge bg-success">Création</span>
+                            <span th:case="'MODIFICATION'" class="badge bg-warning">Modification</span>
+                            <span th:case="'SUPPRESSION'" class="badge bg-danger">Suppression</span>
+                        </span>
                     </td>
                     <td>
                         <span th:text="${entry.utilisateur.prenom + ' ' + entry.utilisateur.nom}"></span>
                         <small class="text-muted d-block" th:text="${entry.utilisateur.email}"></small>
                     </td>
                     <td>
-                        <span th:if="${entry.action != 'MODIFICATION'}" th:text="'Ajout du planning : ' + ${entry.planning.id}"></span>
-
+                        <span th:if="${entry.action != 'MODIFICATION'}" th:text="'Plan de test : ' + ${entry.plan.id}"></span>
                         <button th:if="${entry.action == 'MODIFICATION'}"
                                 class="btn btn-sm btn-primary"
                                 data-bs-toggle="modal"
@@ -190,12 +189,12 @@
                         </button>
                     </td>
                     <td>
-                        <span th:if="${entry.action == 'SUPPRESSION'}" th:text="'Ajout du planning : ' +${entry.planning.id}"></span>
+                        <span th:if="${entry.action == 'SUPPRESSION'}" th:text="'Suppression du plan : ' + ${entry.plan.id}"></span>
                     </td>
                 </tr>
                 </tbody>
-
             </table>
+
             <!-- Modals for MODIFICATION entries -->
             <div th:each="entry, iterStat : ${historique}">
                 <div th:if="${entry.action == 'MODIFICATION'}" th:id="'modalDetails__' + ${iterStat.index}" class="modal fade" tabindex="-1">
@@ -224,7 +223,6 @@
                                     <pre th:text="${entry.nouvelleValeur}" style="background-color:#f8f9fa; padding: 1rem; border-radius: 5px;"></pre>
                                 </div>
                             </div>
-
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                             </div>
@@ -232,7 +230,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 </div>

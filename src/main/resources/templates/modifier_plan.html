@@ -16,7 +16,7 @@
     <div class="card shadow">
         <div class="card-header bg-primary text-white">
             <div class="d-flex justify-content-between align-items-center">
-                <h2 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Nouveau Plan de Test</h2>
+                <h2 class="mb-0"><i class="fas fa-plus-circle me-2"></i>modifier le cas de test</h2>
                 <a th:href="@{'/plan-de-test/liste'}" class="btn btn-light btn-sm">
                     <i class="fas fa-arrow-left me-1"></i> Retour
                 </a>
@@ -42,11 +42,22 @@
                     <textarea class="form-control" id="description" th:field="*{description}" rows="4" required></textarea>
                 </div>
 
-                <div class="mb-3">
-                    <label for="outils" class="form-label">
-                        <i class="fas fa-tools me-1 text-primary"></i> Outils
-                    </label>
-                    <input type="text" class="form-control" id="outils" th:field="*{outils}" required>
+
+
+                <div class="col-md-6 mb-3">
+                    <label for="outils" class="form-label">Outils utilisés</label>
+                    <select class="form-select" id="outils" name="outils" th:field="*{outils}" required>
+                        <option value="Elliade">Elliade</option>
+                        <option value="XF">XF</option>
+                        <option value="GEOS">GEOS</option>
+                        <option value=" CRONOS">VCO CRONOS</option>
+                        <option value="Pleade">IFast</option>
+                    </select>
+                </div>
+                <!-- Champ optionnel pour préciser si "Autre" est sélectionné -->
+                <div class="col-md-6 mb-3" id="autre-outil-container" >
+                    <label for="autre-outil" class="form-label">Précisez un autre outil outil</label>
+                    <input type="text" class="form-control" id="autre-outil" name="autreOutil">
                 </div>
 
                 <div class="mb-3">
@@ -77,26 +88,26 @@
                     </div>
                 </div>
 
-                <!-- Optionnel: Section pour les autres test leaders -->
-                <div class="mb-3">
-                    <label class="form-label">
-                        <i class="fas fa-user-tie me-1 text-primary"></i> Autres test leaders (optionnel)
-                    </label>
-                    <div class="card">
-                        <div class="card-body">
-                            <div th:each="leader : ${testLeaders}" class="form-check">
-                                <input class="form-check-input" type="checkbox" th:id="'leader_' + ${leader.id}"
-                                       th:value="${leader.id}" name="selectedLeaders">
-                                <label class="form-check-label" th:for="'leader_' + ${leader.id}">
-                                    <span th:text="${leader.prenom + ' ' + leader.nom}"></span>
-                                </label>
-                            </div>
-                            <div th:if="${#lists.isEmpty(testLeaders)}" class="text-muted">
-                                Aucun autre test leader disponible
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<!--                &lt;!&ndash; Optionnel: Section pour les autres test leaders &ndash;&gt;-->
+<!--                <div class="mb-3">-->
+<!--                    <label class="form-label">-->
+<!--                        <i class="fas fa-user-tie me-1 text-primary"></i> Autres test leaders (optionnel)-->
+<!--                    </label>-->
+<!--                    <div class="card">-->
+<!--                        <div class="card-body">-->
+<!--                            <div th:each="leader : ${testLeaders}" class="form-check">-->
+<!--                                <input class="form-check-input" type="checkbox" th:id="'leader_' + ${leader.id}"-->
+<!--                                       th:value="${leader.id}" name="selectedLeaders">-->
+<!--                                <label class="form-check-label" th:for="'leader_' + ${leader.id}">-->
+<!--                                    <span th:text="${leader.prenom + ' ' + leader.nom}"></span>-->
+<!--                                </label>-->
+<!--                            </div>-->
+<!--                            <div th:if="${#lists.isEmpty(testLeaders)}" class="text-muted">-->
+<!--                                Aucun autre test leader disponible-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
 
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                     <button type="submit" class="btn btn-success">

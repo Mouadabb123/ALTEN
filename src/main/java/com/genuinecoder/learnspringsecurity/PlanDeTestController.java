@@ -1,14 +1,12 @@
 package com.genuinecoder.learnspringsecurity;
 
-import com.genuinecoder.learnspringsecurity.model.MyUser;
-import com.genuinecoder.learnspringsecurity.model.PlanDeTest;
-import com.genuinecoder.learnspringsecurity.model.MyUserRepository;
-import com.genuinecoder.learnspringsecurity.model.PlanDeTestRepository;
+import com.genuinecoder.learnspringsecurity.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -25,13 +23,18 @@ public class PlanDeTestController {
     @Autowired
     private MyUserRepository myUserRepository;
 
+    @Autowired
+    private HistoriquePlanService historiqueService;
+
+    @Autowired
+    private HistoriquePlanDeTestRepository historiqueRepo;
+
     @GetMapping("/nouveau")
     public String showCreationForm(Model model, Authentication authentication) {
         String email = authentication.getName();
         MyUser currentUser = myUserRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
-        // Get all available testers and test leaders
         List<MyUser> testeurs = myUserRepository.findByRole(MyUser.Role.TESTEUR);
         List<MyUser> testLeaders = myUserRepository.findByRole(MyUser.Role.TEST_LEADER);
         testLeaders.remove(currentUser);
@@ -60,14 +63,12 @@ public class PlanDeTestController {
             throw new AccessDeniedException("Seuls les Test Leaders peuvent créer des plans de test");
         }
 
-        // Set test leads (current user + selected leaders)
         Set<MyUser> testLeaders = new HashSet<>();
         testLeaders.add(currentUser);
         if (selectedLeadersIds != null) {
             testLeaders.addAll(myUserRepository.findAllById(selectedLeadersIds));
         }
 
-        // Set assigned testers
         Set<MyUser> testeursAffectes = new HashSet<>();
         if (selectedTesteursIds != null) {
             testeursAffectes.addAll(myUserRepository.findAllById(selectedTesteursIds));
@@ -76,6 +77,9 @@ public class PlanDeTestController {
         planDeTest.setTestLeads(testLeaders);
         planDeTest.setTesteursAffectes(testeursAffectes);
         planDeTestRepository.save(planDeTest);
+
+        historiqueService.enregistrerAction(planDeTest, currentUser, "CREATION",
+                "Création du plan " + planDeTest.getTitre());
 
         redirectAttributes.addFlashAttribute("success", "Plan de test créé avec succès");
         return "redirect:/plan-de-test/liste";
@@ -91,14 +95,9 @@ public class PlanDeTestController {
         }
 
         model.addAttribute("plans", planDeTestRepository.findAll());
-
-        // Fetch testeurs (users with TESTEUR role)
-        List<MyUser> testeurs = myUserRepository.findByRole(MyUser.Role.TESTEUR);
-        model.addAttribute("testeurs", testeurs);
-
+        model.addAttribute("testeurs", myUserRepository.findByRole(MyUser.Role.TESTEUR));
         return "liste_plans";
     }
-
 
     @GetMapping("/{id}")
     public String afficherPlanDeTest(@PathVariable Long id, Model model) {
@@ -116,7 +115,6 @@ public class PlanDeTestController {
         MyUser currentUser = myUserRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
-        // Changed: Allow any test leader to modify
         if (currentUser.getRole() != MyUser.Role.TEST_LEADER) {
             throw new AccessDeniedException("Vous n'avez pas le droit de modifier ce plan");
         }
@@ -142,23 +140,28 @@ public class PlanDeTestController {
         MyUser currentUser = myUserRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
-        // Changed: Allow any test leader to modify
         if (currentUser.getRole() != MyUser.Role.TEST_LEADER) {
             throw new AccessDeniedException("Vous n'avez pas le droit de modifier ce plan");
         }
 
-        // Update basic fields
+        // Sauvegarder l'ancienne version pour l'historique
+        PlanDeTest ancienPlan = new PlanDeTest();
+        ancienPlan.setTitre(plan.getTitre());
+        ancienPlan.setDescription(plan.getDescription());
+        ancienPlan.setOutils(plan.getOutils());
+        ancienPlan.setCommentaire(plan.getCommentaire());
+
+        // Mettre à jour les champs de base
         plan.setTitre(planDetails.getTitre());
         plan.setDescription(planDetails.getDescription());
         plan.setOutils(planDetails.getOutils());
         plan.setCommentaire(planDetails.getCommentaire());
 
-        // Update test leaders - ensure current user is included if they're a test leader
+        // Mettre à jour les test leaders
         Set<MyUser> testLeaders = new HashSet<>();
         if (plan.getTestLeads() != null) {
             testLeaders.addAll(plan.getTestLeads());
         }
-        // Add current user to testLeads if they're not already there
         testLeaders.add(currentUser);
 
         if (selectedLeadersIds != null) {
@@ -166,7 +169,7 @@ public class PlanDeTestController {
         }
         plan.setTestLeads(testLeaders);
 
-        // Update assigned testers
+        // Mettre à jour les testeurs affectés
         if (selectedTesteursIds != null) {
             plan.setTesteursAffectes(new HashSet<>(myUserRepository.findAllById(selectedTesteursIds)));
         } else {
@@ -174,11 +177,16 @@ public class PlanDeTestController {
         }
 
         planDeTestRepository.save(plan);
+
+        // Enregistrer la modification dans l'historique
+        historiqueService.enregistrerModification(ancienPlan, plan, currentUser);
+
         redirectAttributes.addFlashAttribute("success", "Plan de test mis à jour avec succès");
         return "redirect:/plan-de-test/liste";
     }
 
     @GetMapping("/{id}/supprimer")
+    @Transactional
     public String deletePlanDeTest(@PathVariable Long id, Authentication authentication, RedirectAttributes redirectAttributes) {
         PlanDeTest plan = planDeTestRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Plan de test invalide: " + id));
@@ -186,13 +194,26 @@ public class PlanDeTestController {
         MyUser currentUser = myUserRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
-        // Changed: Allow any test leader to delete
         if (currentUser.getRole() != MyUser.Role.TEST_LEADER) {
             throw new AccessDeniedException("Vous n'avez pas le droit de supprimer ce plan de test");
         }
 
+        // Enregistrer la suppression dans l'historique avant de supprimer
+        historiqueService.enregistrerAction(plan, currentUser, "SUPPRESSION",
+                "Suppression du plan " + plan.getTitre());
+
         planDeTestRepository.delete(plan);
+
         redirectAttributes.addFlashAttribute("success", "Plan de test supprimé avec succès");
         return "redirect:/plan-de-test/liste";
+    }
+
+    @GetMapping("/historique/{id}")
+    public String afficherDetailsModification(@PathVariable Long id, Model model) {
+        HistoriquePlanDeTest historique = historiqueRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Entrée historique invalide: " + id));
+
+        model.addAttribute("historique", historique);
+        return "historique_plan_details";
     }
 }
