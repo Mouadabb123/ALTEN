@@ -26,11 +26,11 @@ public class AuthenticationSuccessHandler extends SavedRequestAwareAuthenticatio
                 .map(role -> {
                     switch (role) {
                         case "ROLE_CHEF_PROJET":
-                            return "/chef-projet/home";
+                            return "/admin/dashboard";
                         case "ROLE_TEST_LEADER":
                             return "/plan-de-test/liste"; // Update this URL
                         case "ROLE_TESTEUR":
-                            return "/testeur/home";
+                            return "/testeur/mes-plans";
                         default:
                             return "/user/home";
                     }

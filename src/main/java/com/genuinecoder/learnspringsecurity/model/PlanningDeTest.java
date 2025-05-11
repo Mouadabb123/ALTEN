@@ -31,6 +31,17 @@ public class PlanningDeTest {
     @Column(name = "date_modification")
     private LocalDateTime dateModification;
 
+    @Column(nullable = false)
+    private Boolean deleted = false;
+
+    @ManyToOne
+    @JoinColumn(name = "equipe_id")
+    private Equipe equipe;
+
+    @ManyToOne
+    @JoinColumn(name = "test_lead_id")
+    private MyUser testLead;
+
     @PrePersist
     protected void onCreate() {
         this.dateCreation = LocalDateTime.now();
@@ -128,6 +139,30 @@ public class PlanningDeTest {
         this.dateModification = dateModification;
     }
 
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public Equipe getEquipe() {
+        return equipe;
+    }
+
+    public void setEquipe(Equipe equipe) {
+        this.equipe = equipe;
+    }
+
+    public MyUser getTestLead() {
+        return testLead;
+    }
+
+    public void setTestLead(MyUser testLead) {
+        this.testLead = testLead;
+    }
+
     @Override
     public String toString() {
         return "PlanningDeTest{" +
@@ -139,6 +174,6 @@ public class PlanningDeTest {
                 ", dateCreation=" + dateCreation +
                 ", dateModification=" + dateModification +
                 ", testLeads=" + testLeads +
-                '}';
-    }
+           '}';
+}
 }

@@ -20,11 +20,13 @@ public class PlanDeTestController {
     @Autowired
     private PlanDeTestRepository planDeTestRepository;
 
+
     @Autowired
     private MyUserRepository myUserRepository;
 
     @Autowired
     private HistoriquePlanService historiqueService;
+
 
     @Autowired
     private HistoriquePlanDeTestRepository historiqueRepo;
@@ -52,6 +54,9 @@ public class PlanDeTestController {
             @ModelAttribute PlanDeTest planDeTest,
             @RequestParam(value = "selectedLeaders", required = false) List<Long> selectedLeadersIds,
             @RequestParam(value = "selectedTesteurs", required = false) List<Long> selectedTesteursIds,
+            @RequestParam(value = "affectationAutomatique", required = false) Boolean affectationAutomatique,
+            @RequestParam(value = "nombreTesteurs", required = false) Integer nombreTesteurs,
+            @RequestParam(value = "difficulte", required = false) String difficulte,
             Authentication authentication,
             RedirectAttributes redirectAttributes) {
 
@@ -70,7 +75,50 @@ public class PlanDeTestController {
         }
 
         Set<MyUser> testeursAffectes = new HashSet<>();
-        if (selectedTesteursIds != null) {
+
+        // Logique d'affectation automatique
+        if (Boolean.TRUE.equals(affectationAutomatique) && nombreTesteurs != null && difficulte != null) {
+            // Récupérer tous les testeurs disponibles avec le rôle TESTEUR
+            List<MyUser> testeursDisponibles = myUserRepository.findByRoleAndDisponibilite(MyUser.Role.TESTEUR, true);
+
+            // Vérifier si on a suffisamment de testeurs disponibles
+            if (testeursDisponibles.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error",
+                        "Aucun testeur disponible pour l'affectation automatique.");
+                return "redirect:/plan-de-test/liste";
+            }
+
+            if (testeursDisponibles.size() < nombreTesteurs) {
+                redirectAttributes.addFlashAttribute("error",
+                        "Nombre de testeurs non disponible. Seulement " + testeursDisponibles.size() + " testeur(s) disponible(s).");
+                return "redirect:/plan-de-test/liste";
+            }
+
+            // Trier les testeurs par expérience (du plus expérimenté au moins expérimenté)
+            testeursDisponibles.sort((t1, t2) -> Integer.compare(t2.getExperience(), t1.getExperience()));
+
+            // Sélectionner les meilleurs testeurs selon la difficulté
+            List<MyUser> testeursSelectionnes;
+
+            if ("DIFFICILE".equalsIgnoreCase(difficulte)) {
+                // Pour les tests difficiles, prendre les plus expérimentés
+                testeursSelectionnes = testeursDisponibles.subList(0, Math.min(nombreTesteurs, testeursDisponibles.size()));
+            } else if ("MOYEN".equalsIgnoreCase(difficulte)) {
+                // Pour les tests moyens, prendre ceux du milieu de la liste
+                int middleIndex = testeursDisponibles.size() / 2;
+                int startIndex = Math.max(0, middleIndex - (nombreTesteurs / 2));
+                int endIndex = Math.min(testeursDisponibles.size(), startIndex + nombreTesteurs);
+                testeursSelectionnes = testeursDisponibles.subList(startIndex, endIndex);
+            } else {
+                // Pour les tests normaux, on peut prendre n'importe qui (ou les moins expérimentés)
+                int startIndex = Math.max(0, testeursDisponibles.size() - nombreTesteurs);
+                testeursSelectionnes = testeursDisponibles.subList(startIndex, testeursDisponibles.size());
+            }
+
+            // Ajouter les testeurs sélectionnés
+            testeursAffectes.addAll(testeursSelectionnes);
+        } else if (selectedTesteursIds != null) {
+            // Affectation manuelle
             testeursAffectes.addAll(myUserRepository.findAllById(selectedTesteursIds));
         }
 
@@ -84,6 +132,7 @@ public class PlanDeTestController {
         redirectAttributes.addFlashAttribute("success", "Plan de test créé avec succès");
         return "redirect:/plan-de-test/liste";
     }
+
 
     @GetMapping("/liste")
     public String listerPlansDeTest(Model model, Authentication authentication) {
@@ -198,13 +247,18 @@ public class PlanDeTestController {
             throw new AccessDeniedException("Vous n'avez pas le droit de supprimer ce plan de test");
         }
 
-        // Enregistrer la suppression dans l'historique avant de supprimer
-        historiqueService.enregistrerAction(plan, currentUser, "SUPPRESSION",
-                "Suppression du plan " + plan.getTitre());
+        try {
+            // Use specific method for deletion records
+            historiqueService.enregistrerSuppression(plan, currentUser);
 
-        planDeTestRepository.delete(plan);
+            // Then delete the plan
+            planDeTestRepository.delete(plan);
 
-        redirectAttributes.addFlashAttribute("success", "Plan de test supprimé avec succès");
+            redirectAttributes.addFlashAttribute("success", "Plan de test supprimé avec succès");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erreur lors de la suppression: " + e.getMessage());
+        }
+
         return "redirect:/plan-de-test/liste";
     }
 

@@ -38,7 +38,9 @@ public class SecurityConfiguration {
                                 "/favicon.ico",  // Explicitly allow favicon
                                 "/error",        // Allow error page
                                 "/plan-de-test/**",
-                                "/testeur/**"
+                                "/testeur/**" ,
+                                "/chef-projet/**"
+
 
                         ).permitAll()
                         .requestMatchers("/chef-projet/**").hasRole("CHEF_PROJET")

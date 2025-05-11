@@ -1,6 +1,8 @@
 package com.genuinecoder.learnspringsecurity.model;
 
 import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.HashSet;
 
@@ -23,6 +25,22 @@ public class PlanDeTest {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String commentaire;
 
+    @Enumerated(EnumType.STRING)
+    private TestStatus status = TestStatus.NOT_STARTED;
+
+    @ManyToOne
+    @JoinColumn(name = "status_updated_by_id")
+    private MyUser statusUpdatedBy;
+
+    @Column(name = "status_update_date")
+    private LocalDateTime statusUpdateDate;
+
+
+
+    public enum TestStatus {
+        NOT_STARTED, ONGOING, OK, KO
+    }
+
     @ManyToMany
     @JoinTable(
             name = "plan_test_lead",
@@ -38,6 +56,7 @@ public class PlanDeTest {
             inverseJoinColumns = @JoinColumn(name = "testeur_id")
     )
     private Set<MyUser> testeursAffectes = new HashSet<>();
+
 
     // Constructors
     public PlanDeTest() {}
@@ -106,6 +125,32 @@ public class PlanDeTest {
         this.testeursAffectes = testeursAffectes;
     }
 
+    public TestStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TestStatus status) {
+        this.status = status;
+    }
+
+    public MyUser getStatusUpdatedBy() {
+        return statusUpdatedBy;
+    }
+
+    public void setStatusUpdatedBy(MyUser statusUpdatedBy) {
+        this.statusUpdatedBy = statusUpdatedBy;
+    }
+
+    public LocalDateTime getStatusUpdateDate() {
+        return statusUpdateDate;
+    }
+
+    public void setStatusUpdateDate(LocalDateTime statusUpdateDate) {
+        this.statusUpdateDate = statusUpdateDate;
+    }
+
+
+
     @Override
     public String toString() {
         return "PlanDeTest{" +
@@ -114,6 +159,11 @@ public class PlanDeTest {
                 ", description='" + description + '\'' +
                 ", outils='" + outils + '\'' +
                 ", commentaire='" + commentaire + '\'' +
+                ", status=" + status +
+                ", statusUpdatedBy=" + statusUpdatedBy +
+                ", statusUpdateDate=" + statusUpdateDate +
+                ", testLeads=" + testLeads +
+                ", testeursAffectes=" + testeursAffectes +
                 '}';
     }
 }

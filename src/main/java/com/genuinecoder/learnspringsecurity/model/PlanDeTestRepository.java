@@ -5,5 +5,8 @@ import java.util.List;
 
 public interface PlanDeTestRepository extends JpaRepository<PlanDeTest, Long> {
     List<PlanDeTest> findByTestLeadsContaining(MyUser user); // Kept for other use cases
-    List<PlanDeTest> findAll(); // New method to fetch all plans
+    List<PlanDeTest> findAll();
+    List<PlanDeTest> findByTesteursAffectesContaining(MyUser testeur);
+
+
 }

@@ -151,9 +151,6 @@
     <a href="/historique" ><i class="bi bi-clock-history me-2"></i>Historique  </a>
     <a href="/testeur/liste" ><i class="bi bi-people me-2"></i>Gestion des testeurs  </a>
 
-
-
-
     <div class="logout-btn">
         <a href="/logout" class="btn btn-outline-light w-100">
             <i class="bi bi-box-arrow-right"></i> Déconnexion
@@ -179,18 +176,23 @@
                 <tr th:each="entry, iterStat : ${historique}">
                     <td th:text="${#temporals.format(entry.dateAction, 'dd/MM/yyyy HH:mm')}"></td>
                     <td>
-        <span th:switch="${entry.action}">
-            <span th:case="'CREATION'" class="badge bg-success">Création</span>
-            <span th:case="'MODIFICATION'" class="badge bg-warning">Modification</span>
-            <span th:case="'SUPPRESSION'" class="badge bg-danger">Suppression</span>
-        </span>
+                        <span th:switch="${entry.action}">
+                            <span th:case="'CREATION'" class="badge bg-success">Création</span>
+                            <span th:case="'MODIFICATION'" class="badge bg-warning">Modification</span>
+                            <span th:case="'SUPPRESSION'" class="badge bg-danger">Suppression</span>
+                        </span>
                     </td>
                     <td>
                         <span th:text="${entry.utilisateur.prenom + ' ' + entry.utilisateur.nom}"></span>
                         <small class="text-muted d-block" th:text="${entry.utilisateur.email}"></small>
                     </td>
                     <td>
-                        <span th:if="${entry.action != 'MODIFICATION'}" th:text="'Ajout du planning : ' + ${entry.planning.id}"></span>
+                        <!-- Use dynamic action-specific details -->
+                        <span th:if="${entry.action == 'CREATION' and entry.planning != null}" th:text="'Ajout du planning : ' + ${entry.planning.id}"></span>
+                        <span th:if="${entry.action == 'SUPPRESSION' and entry.planning != null}" th:text="'Suppression du planning : ' + ${entry.planning.id}"></span>
+
+                        <span th:if="${entry.planningReference != null}" th:text="'Suppression du ' + ${entry.planningReference}"></span>
+
 
                         <button th:if="${entry.action == 'MODIFICATION'}"
                                 class="btn btn-sm btn-primary"
@@ -199,12 +201,9 @@
                             Voir les détails
                         </button>
                     </td>
-                    <td>
-                        <span th:if="${entry.action == 'SUPPRESSION'}" th:text="'Ajout du planning : ' +${entry.planning.id}"></span>
-                    </td>
+
                 </tr>
                 </tbody>
-
             </table>
             <!-- Modals for MODIFICATION entries -->
             <div th:each="entry, iterStat : ${historique}">
@@ -242,7 +241,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 </div>

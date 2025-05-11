@@ -1,9 +1,6 @@
 package com.genuinecoder.learnspringsecurity;
 
-import com.genuinecoder.learnspringsecurity.model.HistoriquePlanning;
-import com.genuinecoder.learnspringsecurity.model.HistoriquePlanningRepository;
-import com.genuinecoder.learnspringsecurity.model.MyUser;
-import com.genuinecoder.learnspringsecurity.model.MyUserRepository;
+import com.genuinecoder.learnspringsecurity.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,8 +18,24 @@ public class HistoriqueController {
     @Autowired
     private HistoriquePlanningRepository historiqueRepo;
 
+    // Add this new repository for test plan history
+    @Autowired
+    private HistoriquePlanDeTestRepository historiquePlanRepo;
+
     @Autowired
     private MyUserRepository userRepo;
+
+    @GetMapping("/historique-plans")
+    public String afficherHistoriquePlans(Model model) {
+        // Fetch all history records including deletions using the correct repository
+        List<HistoriquePlanDeTest> historiques = historiquePlanRepo.findAll();
+
+        // Sort by date (most recent first)
+        historiques.sort((h1, h2) -> h2.getDateAction().compareTo(h1.getDateAction()));
+
+        model.addAttribute("historiques", historiques);
+        return "historique_plan";
+    }
 
     @GetMapping
     public String getHistorique(Authentication authentication, Model model) {

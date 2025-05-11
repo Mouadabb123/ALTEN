@@ -139,6 +139,36 @@
         .highlight-row {
             animation: highlight 1.5s ease;
         }
+
+        /* Styles pour la recherche par date */
+        .date-search-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .date-search-container .date-group {
+            flex: 1;
+        }
+
+        .date-search-container button {
+            align-self: flex-end;
+            height: 38px;
+        }
+
+        .truncate-text {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Style pour l'affichage du commentaire complet */
+        .tooltip-inner {
+            max-width: 300px;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -152,9 +182,6 @@
     </a>
     <a href="/historique" ><i class="bi bi-clock-history me-2"></i>Historique du planning de test  </a>
     <a href="/testeur/liste" ><i class="bi bi-people me-2"></i>Gestion des testeurs  </a>
-
-
-
 
     <div class="logout-btn">
         <a href="/logout" class="btn btn-outline-light w-100">
@@ -175,15 +202,38 @@
             <i class="bi bi-plus-circle"></i> Ajouter une tache
         </button>
 
+        <!-- Recherche textuelle -->
+        <div class="search-container">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un planning...">
+        </div>
 
+        <!-- Recherche par date -->
+        <div class="date-search-container">
+            <div class="date-group">
+                <label for="startDate" class="form-label">Date début</label>
+                <input type="date" class="form-control" id="startDate">
+            </div>
+            <div class="date-group">
+                <label for="endDate" class="form-label">Date fin</label>
+                <input type="date" class="form-control" id="endDate">
+            </div>
+            <button id="filterDates" class="btn btn-primary">
+                <i class="bi bi-funnel"></i> Filtrer
+            </button>
+            <button id="resetDates" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle"></i> Réinitialiser
+            </button>
+        </div>
 
         <table class="table table-striped" id="planningsTable" th:if="${not #lists.isEmpty(plannings)}">
             <thead>
             <tr>
-                <th data-sort="numeric">ID</th>
-                <th data-sort="string">Tâche</th>
-                <th data-sort="string">Date Début</th>
-                <th data-sort="string">Date Fin</th>
+                <th data-sort="numeric">ID <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
+                <th data-sort="string">Tâche <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
+                <th data-sort="string">Date Début <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
+                <th data-sort="string">Date Fin <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
+                <th data-sort="string">Commentaire <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
                 <th>Actions</th>
             </tr>
             </thead>
@@ -191,8 +241,11 @@
             <tr th:each="planning : ${plannings}">
                 <td th:text="${planning.id}"></td>
                 <td th:text="${planning.tache}"></td>
-                <td th:text="${planning.dateDebut}"></td>
-                <td th:text="${planning.dateFin}"></td>
+                <td th:text="${planning.dateDebut}" class="date-value"></td>
+                <td th:text="${planning.dateFin}" class="date-value"></td>
+                <td>
+                    <div class="truncate-text" th:text="${planning.commentaire}" th:attr="data-bs-toggle='tooltip', data-bs-placement='top', title=${planning.commentaire}"></div>
+                </td>
                 <td>
                     <a th:href="@{'/planning-de-test/' + ${planning.id} + '/modifier'}" class="btn btn-sm btn-warning">
                         <i class="bi bi-pencil"></i>
@@ -205,6 +258,11 @@
             </tr>
             </tbody>
         </table>
+
+        <!-- Message quand aucun résultat de recherche -->
+        <div id="noResultsMessage" class="alert alert-info mt-3 d-none">
+            Aucun planning de test ne correspond à votre recherche.
+        </div>
     </div>
 
     <!-- Modal pour ajouter un planning -->
@@ -237,7 +295,7 @@
                             <label for="commentaire" class="form-label">Commentaire</label>
                             <textarea class="form-control" id="commentaire" name="commentaire" rows="3" required></textarea>
                         </div>
-
+                    </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
@@ -250,6 +308,244 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Script de recherche/tri similaire à votre template existant -->
+
+<!-- Script pour la recherche et le tri -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Référence au tableau et aux éléments de recherche
+        const table = document.getElementById('planningsTable');
+        const searchInput = document.getElementById('searchInput');
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        const filterDatesBtn = document.getElementById('filterDates');
+        const resetDatesBtn = document.getElementById('resetDates');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+
+        if (!table) return; // Protection contre les erreurs si le tableau n'existe pas
+
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+
+        // Initialiser les tooltips pour les commentaires
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl, {
+                html: true
+            });
+        });
+
+        // Variables pour le tri
+        let sortDirection = {};
+        let currentSortColumn = null;
+
+        // Fonction de recherche dynamique
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                filterTableRows();
+            });
+        }
+
+        // Événement pour le filtre par date
+        if (filterDatesBtn) {
+            filterDatesBtn.addEventListener('click', function() {
+                filterTableRows();
+            });
+        }
+
+        // Événement pour réinitialiser les dates
+        if (resetDatesBtn) {
+            resetDatesBtn.addEventListener('click', function() {
+                startDateInput.value = '';
+                endDateInput.value = '';
+                filterTableRows();
+            });
+        }
+
+        // Fonction principale pour filtrer les lignes du tableau
+        function filterTableRows() {
+            const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            const startDate = startDateInput && startDateInput.value ? new Date(startDateInput.value) : null;
+            const endDate = endDateInput && endDateInput.value ? new Date(endDateInput.value) : null;
+
+            // Ajuster la fin de journée pour endDate
+            if (endDate) {
+                endDate.setHours(23, 59, 59, 999);
+            }
+
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                // Filtrage par texte
+                const text = row.textContent.toLowerCase();
+                let isVisible = text.includes(searchTerm);
+
+                // Filtrage supplémentaire par date si nécessaire
+                if (isVisible && (startDate || endDate)) {
+                    const dateColumns = row.querySelectorAll('.date-value');
+                    if (dateColumns.length >= 2) {
+                        const rowStartDateStr = dateColumns[0].textContent.trim();
+                        const rowEndDateStr = dateColumns[1].textContent.trim();
+
+                        // Conversion des chaînes de date au format Date
+                        const rowStartDate = parseDate(rowStartDateStr);
+                        const rowEndDate = parseDate(rowEndDateStr);
+
+                        if (rowStartDate && rowEndDate) {
+                            // Vérification si les dates du planning chevauchent la plage sélectionnée
+                            if (startDate && endDate) {
+                                // Cas où les deux dates sont spécifiées
+                                isVisible = (rowStartDate <= endDate && rowEndDate >= startDate);
+                            } else if (startDate) {
+                                // Cas où seule la date de début est spécifiée
+                                isVisible = (rowEndDate >= startDate);
+                            } else if (endDate) {
+                                // Cas où seule la date de fin est spécifiée
+                                isVisible = (rowStartDate <= endDate);
+                            }
+                        }
+                    }
+                }
+
+                row.style.display = isVisible ? '' : 'none';
+
+                if (isVisible) {
+                    visibleCount++;
+                    // Ajoute une animation de surbrillance pour les lignes qui correspondent
+                    if (searchTerm !== '' || startDate || endDate) {
+                        row.classList.add('highlight-row');
+                        setTimeout(() => {
+                            row.classList.remove('highlight-row');
+                        }, 1500);
+                    }
+                }
+            });
+
+            // Afficher un message si aucun résultat n'est trouvé
+            if (noResultsMessage) {
+                if (visibleCount === 0 && rows.length > 0) {
+                    noResultsMessage.classList.remove('d-none');
+                } else {
+                    noResultsMessage.classList.add('d-none');
+                }
+            }
+        }
+
+        // Fonction pour parser les dates
+        function parseDate(dateStr) {
+            // Détection du format de la date
+            let date;
+
+            // Format FR: DD/MM/YYYY
+            if (dateStr.includes('/')) {
+                const parts = dateStr.split('/');
+                if (parts.length === 3) {
+                    date = new Date(parts[2], parts[1] - 1, parts[0]);
+                }
+            }
+            // Format ISO: YYYY-MM-DD
+            else if (dateStr.includes('-')) {
+                date = new Date(dateStr);
+            }
+
+            return date;
+        }
+
+        // Configuration du tri
+        const headers = table.querySelectorAll('th');
+
+        headers.forEach(header => {
+            if (!header.dataset.sort) return; // Ignorer les colonnes sans attribut de tri
+
+            const sortIcon = header.querySelector('.sort-icon');
+            if (!sortIcon) return;
+
+            // Initialiser la direction de tri pour cette colonne
+            sortDirection[header.textContent.trim()] = 'none';
+
+            header.addEventListener('click', function() {
+                const columnName = this.textContent.trim();
+                const sortType = this.dataset.sort;
+
+                // Cycle de tri: none -> asc -> desc -> none
+                if (sortDirection[columnName] === 'none') {
+                    sortDirection[columnName] = 'asc';
+                    sortIcon.innerHTML = '<i class="bi bi-arrow-up"></i>';
+                } else if (sortDirection[columnName] === 'asc') {
+                    sortDirection[columnName] = 'desc';
+                    sortIcon.innerHTML = '<i class="bi bi-arrow-down"></i>';
+                } else {
+                    sortDirection[columnName] = 'none';
+                    sortIcon.innerHTML = '<i class="bi bi-arrow-down-up"></i>';
+
+                    // Réinitialiser l'ordre d'origine
+                    resetTableOrder();
+                    return;
+                }
+
+                // Réinitialiser les autres icônes de tri
+                headers.forEach(h => {
+                    if (h !== header && h.querySelector('.sort-icon')) {
+                        h.querySelector('.sort-icon').innerHTML = '<i class="bi bi-arrow-down-up"></i>';
+                        sortDirection[h.textContent.trim()] = 'none';
+                    }
+                });
+
+                // Déterminer l'index de la colonne
+                const columnIndex = Array.from(header.parentNode.children).indexOf(header);
+
+                // Trier les lignes
+                sortTable(columnIndex, sortDirection[columnName], sortType);
+            });
+        });
+
+        // Fonction pour trier le tableau
+        function sortTable(columnIndex, direction, sortType) {
+            const sortedRows = rows.slice().sort((a, b) => {
+                const aValue = a.children[columnIndex].textContent.trim();
+                const bValue = b.children[columnIndex].textContent.trim();
+
+                // Tri spécial pour les dates
+                if (columnIndex === 2 || columnIndex === 3) { // Indices des colonnes de dates
+                    const aDate = parseDate(aValue);
+                    const bDate = parseDate(bValue);
+
+                    if (aDate && bDate) {
+                        return direction === 'asc' ? aDate - bDate : bDate - aDate;
+                    }
+                }
+
+                if (direction === 'asc') {
+                    if (sortType === 'numeric') {
+                        return parseFloat(aValue) - parseFloat(bValue);
+                    } else {
+                        return aValue.localeCompare(bValue, 'fr', { sensitivity: 'base' });
+                    }
+                } else {
+                    if (sortType === 'numeric') {
+                        return parseFloat(bValue) - parseFloat(aValue);
+                    } else {
+                        return bValue.localeCompare(aValue, 'fr', { sensitivity: 'base' });
+                    }
+                }
+            });
+
+            // Vider et remplir le tableau avec les lignes triées
+            while (tbody.firstChild) {
+                tbody.removeChild(tbody.firstChild);
+            }
+
+            sortedRows.forEach(row => tbody.appendChild(row));
+        }
+
+        // Fonction pour réinitialiser l'ordre du tableau
+        function resetTableOrder() {
+            while (tbody.firstChild) {
+                tbody.removeChild(tbody.firstChild);
+            }
+
+            rows.forEach(row => tbody.appendChild(row));
+        }
+    });
+</script>
 </body>
 </html>

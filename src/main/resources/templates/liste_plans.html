@@ -142,6 +142,22 @@
         .highlight-row {
             animation: highlight 1.5s ease;
         }
+
+        /* Style pour les options d'affectation */
+        .affectation-options {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .affectation-options .form-check {
+            margin-bottom: 0;
+        }
+
+        #nombreTesteursContainer {
+            display: none;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -151,10 +167,10 @@
 <div class="sidebar d-flex flex-column">
     <h4>Test Lead</h4>
     <a href="/plan-de-test/liste" >
-       <i class="bi bi-list-task me-2"></i>Plan de Test
+        <i class="bi bi-list-task me-2"></i>Plan de Test
     </a>
     <a href="/planning-de-test/liste" >
-       <i class="bi bi-calendar-event me-2"></i>Planning de Test
+        <i class="bi bi-calendar-event me-2"></i>Planning de Test
     </a>
     <a href="/historique-plan" ><i class="bi bi-clock-history me-2"></i>Historique du plan de test </a>
     <a href="/testeur/liste" ><i class="bi bi-people me-2"></i>Gestion des testeurs  </a>
@@ -255,48 +271,82 @@
                         </div>
 
 
-                            <div class="col-md-6 mb-3">
-                                <label for="outils" class="form-label">Outils utilisés</label>
-                                <select class="form-select" id="outils" name="outils" required>
-                                    <option value="Elliade">Elliade</option>
-                                    <option value="XF">XF</option>
-                                    <option value="GEOS">GEOS</option>
-                                    <option value="VCO CRONOS"> CRONOS</option>
-                                    <option value="IFast">Pleade</option>
-                                </select>
-                            </div>
-                            <!-- Champ optionnel pour préciser si "Autre" est sélectionné -->
-                            <div class="col-md-6 mb-3" id="autre-outil-container" >
-                                <label for="autre-outil" class="form-label">Précisez un autre outil</label>
-                                <input type="text" class="form-control" id="autre-outil" name="autreOutil">
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="commentaire" class="form-label">Commentaire</label>
-                                <input type="text" class="form-control" id="commentaire" name="commentaire" required>
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="outils" class="form-label">Outils utilisés</label>
+                            <select class="form-select" id="outils" name="outils" required>
+                                <option value="Elliade">Elliade</option>
+                                <option value="XF">XF</option>
+                                <option value="GEOS">GEOS</option>
+                                <option value="VCO CRONOS"> CRONOS</option>
+                                <option value="IFast">Pleade</option>
+                            </select>
+                        </div>
+                        <!-- Champ optionnel pour préciser si "Autre" est sélectionné -->
+                        <div class="col-md-6 mb-3" id="autre-outil-container" >
+                            <label for="autre-outil" class="form-label">Précisez un autre outil</label>
+                            <input type="text" class="form-control" id="autre-outil" name="autreOutil">
                         </div>
 
-                        <!-- Nouvelle section pour les testeurs -->
-                        <div class="mb-3">
-                            <label class="form-label">Testeurs affectés</label>
-                            <div th:each="testeur : ${testeurs}">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox"
-                                           th:id="'testeur_' + ${testeur.id}"
-                                           th:value="${testeur.id}"
-                                           name="selectedTesteurs">
+                        <div class="col-md-6 mb-3">
+                            <label for="commentaire" class="form-label">Commentaire</label>
+                            <input type="text" class="form-control" id="commentaire" name="commentaire" required>
+                        </div>
 
-                                    <label class="form-check-label" th:for="'testeur_' + ${testeur.id}">
-                                        <span th:text="${testeur.prenom + ' ' + testeur.nom}"></span>
+                        <!-- Options d'affectation des testeurs -->
+                        <div class="mb-3">
+                            <label class="form-label">Mode d'affectation des testeurs</label>
+                            <div class="affectation-options">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="modeAffectation" id="affectationManuelle" value="manuelle" checked>
+                                    <label class="form-check-label" for="affectationManuelle">
+                                        Affectation Manuelle
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="modeAffectation" id="affectationAutomatique" value="automatique">
+                                    <label class="form-check-label" for="affectationAutomatique">
+                                        Affectation Automatique
                                     </label>
                                 </div>
                             </div>
+
+                            <!-- Section pour l'affectation manuelle -->
+                            <div id="affectationManuelleContainer">
+                                <div th:each="testeur : ${testeurs}">
+                                    <div class="form-check">
+                                        <input class="form-check-input testeurManuel" type="checkbox"
+                                               th:id="'testeur_' + ${testeur.id}"
+                                               th:value="${testeur.id}"
+                                               name="selectedTesteurs">
+                                        <label class="form-check-label" th:for="'testeur_' + ${testeur.id}">
+                                            <span th:text="${testeur.prenom + ' ' + testeur.nom}"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section pour l'affectation automatique -->
+                            <div id="nombreTesteursContainer" class="mt-3">
+                                <div class="mb-3">
+                                    <label for="nombreTesteurs" class="form-label">Nombre de testeurs à affecter automatiquement</label>
+                                    <input type="number" class="form-control" id="nombreTesteurs" name="nombreTesteurs" min="1" max="10" value="1">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="difficulte" class="form-label">Niveau de difficulté</label>
+                                    <select class="form-select" id="difficulte" name="difficulte" required>
+                                        <option value="NORMAL">Normal</option>
+                                        <option value="MOYEN">Moyen</option>
+                                        <option value="DIFFICILE">Difficile</option>
+                                    </select>
+                                </div>
+                                <input type="hidden" name="affectationAutomatique" id="affectationAutomatiqueInput" value="false">
+                            </div>
                         </div>
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                         <button type="submit" class="btn btn-primary">Enregistrer</button>
-                    </div>
                     </div>
                 </form>
             </div>
@@ -315,130 +365,217 @@
         const searchInput = document.getElementById('searchInput');
         const noResultsMessage = document.getElementById('noResultsMessage');
 
-        if (!table || !searchInput) return; // Protection contre les erreurs si les éléments n'existent pas
+        if (table && searchInput) {
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
 
-        const tbody = table.querySelector('tbody');
-        const rows = Array.from(tbody.querySelectorAll('tr'));
+            // Variables pour le tri
+            let sortDirection = {};
+            let currentSortColumn = null;
 
-        // Variables pour le tri
-        let sortDirection = {};
-        let currentSortColumn = null;
+            // Fonction de recherche dynamique
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                let visibleCount = 0;
 
-        // Fonction de recherche dynamique
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase().trim();
-            let visibleCount = 0;
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    const isVisible = text.includes(searchTerm);
 
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                const isVisible = text.includes(searchTerm);
+                    row.style.display = isVisible ? '' : 'none';
 
-                row.style.display = isVisible ? '' : 'none';
-
-                if (isVisible) {
-                    visibleCount++;
-                    // Ajoute une animation de surbrillance pour les lignes qui correspondent
-                    if (searchTerm !== '') {
-                        row.classList.add('highlight-row');
-                        setTimeout(() => {
-                            row.classList.remove('highlight-row');
-                        }, 1500);
-                    }
-                }
-            });
-
-            // Afficher un message si aucun résultat n'est trouvé
-            if (visibleCount === 0 && rows.length > 0) {
-                noResultsMessage.classList.remove('d-none');
-            } else {
-                noResultsMessage.classList.add('d-none');
-            }
-        });
-
-        // Configuration du tri
-        const headers = table.querySelectorAll('th');
-
-        headers.forEach(header => {
-            if (!header.dataset.sort) return; // Ignorer les colonnes sans attribut de tri
-
-            const sortIcon = header.querySelector('.sort-icon');
-            if (!sortIcon) return;
-
-            // Initialiser la direction de tri pour cette colonne
-            sortDirection[header.textContent.trim()] = 'none';
-
-            header.addEventListener('click', function() {
-                const columnName = this.textContent.trim();
-                const sortType = this.dataset.sort;
-
-                // Cycle de tri: none -> asc -> desc -> none
-                if (sortDirection[columnName] === 'none') {
-                    sortDirection[columnName] = 'asc';
-                    sortIcon.innerHTML = '<i class="bi bi-arrow-up"></i>';
-                } else if (sortDirection[columnName] === 'asc') {
-                    sortDirection[columnName] = 'desc';
-                    sortIcon.innerHTML = '<i class="bi bi-arrow-down"></i>';
-                } else {
-                    sortDirection[columnName] = 'none';
-                    sortIcon.innerHTML = '<i class="bi bi-arrow-down-up"></i>';
-
-                    // Réinitialiser l'ordre d'origine
-                    resetTableOrder();
-                    return;
-                }
-
-                // Réinitialiser les autres icônes de tri
-                headers.forEach(h => {
-                    if (h !== header && h.querySelector('.sort-icon')) {
-                        h.querySelector('.sort-icon').innerHTML = '<i class="bi bi-arrow-down-up"></i>';
-                        sortDirection[h.textContent.trim()] = 'none';
+                    if (isVisible) {
+                        visibleCount++;
+                        // Ajoute une animation de surbrillance pour les lignes qui correspondent
+                        if (searchTerm !== '') {
+                            row.classList.add('highlight-row');
+                            setTimeout(() => {
+                                row.classList.remove('highlight-row');
+                            }, 1500);
+                        }
                     }
                 });
 
-                // Déterminer l'index de la colonne
-                const columnIndex = Array.from(header.parentNode.children).indexOf(header);
-
-                // Trier les lignes
-                sortTable(columnIndex, sortDirection[columnName], sortType);
-            });
-        });
-
-        // Fonction pour trier le tableau
-        function sortTable(columnIndex, direction, sortType) {
-            const sortedRows = rows.slice().sort((a, b) => {
-                const aValue = a.children[columnIndex].textContent.trim();
-                const bValue = b.children[columnIndex].textContent.trim();
-
-                if (direction === 'asc') {
-                    if (sortType === 'numeric') {
-                        return parseFloat(aValue) - parseFloat(bValue);
-                    } else {
-                        return aValue.localeCompare(bValue, 'fr', { sensitivity: 'base' });
-                    }
+                // Afficher un message si aucun résultat n'est trouvé
+                if (visibleCount === 0 && rows.length > 0) {
+                    noResultsMessage.classList.remove('d-none');
                 } else {
-                    if (sortType === 'numeric') {
-                        return parseFloat(bValue) - parseFloat(aValue);
-                    } else {
-                        return bValue.localeCompare(aValue, 'fr', { sensitivity: 'base' });
-                    }
+                    noResultsMessage.classList.add('d-none');
                 }
             });
 
-            // Vider et remplir le tableau avec les lignes triées
-            while (tbody.firstChild) {
-                tbody.removeChild(tbody.firstChild);
+            // Configuration du tri
+            const headers = table.querySelectorAll('th');
+
+            headers.forEach(header => {
+                if (!header.dataset.sort) return; // Ignorer les colonnes sans attribut de tri
+
+                const sortIcon = header.querySelector('.sort-icon');
+                if (!sortIcon) return;
+
+                // Initialiser la direction de tri pour cette colonne
+                sortDirection[header.textContent.trim()] = 'none';
+
+                header.addEventListener('click', function() {
+                    const columnName = this.textContent.trim();
+                    const sortType = this.dataset.sort;
+
+                    // Cycle de tri: none -> asc -> desc -> none
+                    if (sortDirection[columnName] === 'none') {
+                        sortDirection[columnName] = 'asc';
+                        sortIcon.innerHTML = '<i class="bi bi-arrow-up"></i>';
+                    } else if (sortDirection[columnName] === 'asc') {
+                        sortDirection[columnName] = 'desc';
+                        sortIcon.innerHTML = '<i class="bi bi-arrow-down"></i>';
+                    } else {
+                        sortDirection[columnName] = 'none';
+                        sortIcon.innerHTML = '<i class="bi bi-arrow-down-up"></i>';
+
+                        // Réinitialiser l'ordre d'origine
+                        resetTableOrder();
+                        return;
+                    }
+
+                    // Réinitialiser les autres icônes de tri
+                    headers.forEach(h => {
+                        if (h !== header && h.querySelector('.sort-icon')) {
+                            h.querySelector('.sort-icon').innerHTML = '<i class="bi bi-arrow-down-up"></i>';
+                            sortDirection[h.textContent.trim()] = 'none';
+                        }
+                    });
+
+                    // Déterminer l'index de la colonne
+                    const columnIndex = Array.from(header.parentNode.children).indexOf(header);
+
+                    // Trier les lignes
+                    sortTable(columnIndex, sortDirection[columnName], sortType);
+                });
+            });
+
+            // Fonction pour trier le tableau
+            function sortTable(columnIndex, direction, sortType) {
+                const sortedRows = rows.slice().sort((a, b) => {
+                    const aValue = a.children[columnIndex].textContent.trim();
+                    const bValue = b.children[columnIndex].textContent.trim();
+
+                    if (direction === 'asc') {
+                        if (sortType === 'numeric') {
+                            return parseFloat(aValue) - parseFloat(bValue);
+                        } else {
+                            return aValue.localeCompare(bValue, 'fr', { sensitivity: 'base' });
+                        }
+                    } else {
+                        if (sortType === 'numeric') {
+                            return parseFloat(bValue) - parseFloat(aValue);
+                        } else {
+                            return bValue.localeCompare(aValue, 'fr', { sensitivity: 'base' });
+                        }
+                    }
+                });
+
+                // Vider et remplir le tableau avec les lignes triées
+                while (tbody.firstChild) {
+                    tbody.removeChild(tbody.firstChild);
+                }
+
+                sortedRows.forEach(row => tbody.appendChild(row));
             }
 
-            sortedRows.forEach(row => tbody.appendChild(row));
+            // Fonction pour réinitialiser l'ordre du tableau
+            function resetTableOrder() {
+                while (tbody.firstChild) {
+                    tbody.removeChild(tbody.firstChild);
+                }
+
+                rows.forEach(row => tbody.appendChild(row));
+            }
         }
 
-        // Fonction pour réinitialiser l'ordre du tableau
-        function resetTableOrder() {
-            while (tbody.firstChild) {
-                tbody.removeChild(tbody.firstChild);
-            }
+        // Gestion de l'affectation automatique des testeurs
+        const affectationManuelle = document.getElementById('affectationManuelle');
+        const affectationAutomatique = document.getElementById('affectationAutomatique');
+        const affectationManuelleContainer = document.getElementById('affectationManuelleContainer');
+        const nombreTesteursContainer = document.getElementById('nombreTesteursContainer');
+        const affectationAutomatiqueInput = document.getElementById('affectationAutomatiqueInput');
+        const nombreTesteursInput = document.getElementById('nombreTesteurs');
+        const difficulteSelect = document.getElementById('difficulte');
 
-            rows.forEach(row => tbody.appendChild(row));
+        // Fonction pour mettre à jour les sections d'affectation
+        function updateAffectationSections() {
+            if (affectationManuelle.checked) {
+                affectationManuelleContainer.style.display = 'block';
+                nombreTesteursContainer.style.display = 'none';
+                affectationAutomatiqueInput.value = 'false';
+
+                if (nombreTesteursInput) nombreTesteursInput.disabled = true;
+                if (difficulteSelect) difficulteSelect.disabled = true;
+            } else {
+                affectationManuelleContainer.style.display = 'none';
+                nombreTesteursContainer.style.display = 'block';
+                affectationAutomatiqueInput.value = 'true';
+
+                if (nombreTesteursInput) nombreTesteursInput.disabled = false;
+                if (difficulteSelect) difficulteSelect.disabled = false;
+
+                // Décocher toutes les cases des testeurs manuels
+                const checkboxes = document.querySelectorAll('.testeurManuel');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+            }
+        }
+
+        // Initialisation et écouteurs d'événements
+        if (affectationManuelle && affectationAutomatique) {
+            affectationManuelle.addEventListener('change', updateAffectationSections);
+            affectationAutomatique.addEventListener('change', updateAffectationSections);
+
+            // Initialiser l'état par défaut
+            updateAffectationSections();
+        }
+
+        // Validation du formulaire avant soumission
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (affectationAutomatique && affectationAutomatique.checked && nombreTesteursInput) {
+                    const nombreTesteurs = parseInt(nombreTesteursInput.value);
+                    if (isNaN(nombreTesteurs)) {
+                        e.preventDefault();
+                        alert('Veuillez entrer un nombre valide de testeurs');
+                        return;
+                    }
+
+                    if (nombreTesteurs < 1) {
+                        e.preventDefault();
+                        alert('Le nombre de testeurs doit être au moins 1');
+                        return;
+                    }
+
+                    if (!difficulteSelect || difficulteSelect.value === '') {
+                        e.preventDefault();
+                        alert('Veuillez sélectionner un niveau de difficulté');
+                        return;
+                    }
+                }
+            });
+        }
+
+        // Gestion du champ "autre outil"
+        const outilsSelect = document.getElementById('outils');
+        const autreOutilContainer = document.getElementById('autre-outil-container');
+
+        if (outilsSelect && autreOutilContainer) {
+            outilsSelect.addEventListener('change', function() {
+                if (this.value === 'Autre') {
+                    autreOutilContainer.style.display = 'block';
+                } else {
+                    autreOutilContainer.style.display = 'none';
+                }
+            });
+
+            // Initialiser l'état au chargement
+            autreOutilContainer.style.display = outilsSelect.value === 'Autre' ? 'block' : 'none';
         }
     });
 </script>

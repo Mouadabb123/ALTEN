@@ -18,8 +18,20 @@ public class HistoriquePlanning {
     private String nouvelleValeur;
 
     @ManyToOne
-    @JoinColumn(name = "planning_id" , nullable = true)
+    @JoinColumn(name = "planning_id", nullable = true) // important: nullable = true
     private PlanningDeTest planning;
+
+
+    @Column(name = "planning_reference")
+    private String planningReference;
+
+    public String getPlanningReference() {
+        return planningReference;
+    }
+
+    public void setPlanningReference(String planningReference) {
+        this.planningReference = planningReference;
+    }
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -129,6 +141,6 @@ public class HistoriquePlanning {
                 ", action='" + action + '\'' +
                 ", details='" + details + '\'' +
                 ", dateAction=" + dateAction +
-                '}';
-    }
+            '}';
+}
 }

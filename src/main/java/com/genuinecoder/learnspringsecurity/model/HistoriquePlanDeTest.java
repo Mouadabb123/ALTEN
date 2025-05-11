@@ -1,11 +1,14 @@
 package com.genuinecoder.learnspringsecurity.model;
 
 import jakarta.persistence.*;
+
+import java.sql.Date;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "historique_plan_de_test")
 public class HistoriquePlanDeTest {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,9 +19,23 @@ public class HistoriquePlanDeTest {
     @Column(columnDefinition = "TEXT")
     private String nouvelleValeur;
 
-    @ManyToOne
-    @JoinColumn(name = "plan_id", nullable = false)
+    private Date date;
+
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "plan_id", nullable = true)
     private PlanDeTest plan;
+
+    @Column(name = "plan_id_ref")
+    private Long planId;
+
+
+    public Long getPlanId() {
+        return planId;
+    }
+
+    public void setPlanId(Long planId) {
+        this.planId = planId;
+    }
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -28,11 +45,12 @@ public class HistoriquePlanDeTest {
     private String details;
     private LocalDateTime dateAction;
 
-    // Constructeurs
+    // Constructors
     public HistoriquePlanDeTest() {
     }
 
-    public HistoriquePlanDeTest(PlanDeTest plan, MyUser utilisateur, String action, String details, LocalDateTime dateAction) {
+    public HistoriquePlanDeTest(Long id, PlanDeTest plan, MyUser utilisateur, String action, String details, LocalDateTime dateAction) {
+        this.id = id;
         this.plan = plan;
         this.utilisateur = utilisateur;
         this.action = action;
@@ -40,7 +58,8 @@ public class HistoriquePlanDeTest {
         this.dateAction = dateAction;
     }
 
-    public HistoriquePlanDeTest(String ancienneValeur, String nouvelleValeur, PlanDeTest plan, MyUser utilisateur, String action, String details, LocalDateTime dateAction) {
+    public HistoriquePlanDeTest(Long id, String ancienneValeur, String nouvelleValeur, PlanDeTest plan, MyUser utilisateur, String action, String details, LocalDateTime dateAction) {
+        this.id = id;
         this.ancienneValeur = ancienneValeur;
         this.nouvelleValeur = nouvelleValeur;
         this.plan = plan;
@@ -50,7 +69,7 @@ public class HistoriquePlanDeTest {
         this.dateAction = dateAction;
     }
 
-    // Getters et Setters
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -73,6 +92,14 @@ public class HistoriquePlanDeTest {
 
     public void setNouvelleValeur(String nouvelleValeur) {
         this.nouvelleValeur = nouvelleValeur;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 
     public PlanDeTest getPlan() {

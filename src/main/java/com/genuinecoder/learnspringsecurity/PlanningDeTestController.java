@@ -31,6 +31,12 @@ public class PlanningDeTestController {
     @Autowired
     private MyUserRepository myUserRepository;
 
+    @Autowired
+    private HistoriquePlanningService historiquePlanningService;
+
+    @Autowired
+    private EquipeRepository equipeRepository;
+
     // Afficher le formulaire de création
     @GetMapping("/nouveau")
     public String showCreationForm(Model model, Authentication authentication) {
@@ -255,13 +261,11 @@ public class PlanningDeTestController {
         }
 
         try {
-            // D'abord, supprimer tous les enregistrements d'historique associés
-            List<HistoriquePlanning> historiques = HistoriqueRepo.findByPlanning(planning);
-            if (historiques != null && !historiques.isEmpty()) {
-                HistoriqueRepo.deleteAll(historiques);
-            }
+            // First, record the deletion action in the history - Use SUPPRESSION for consistency
+            historiquePlanningService.enregistrerAction(planning, currentUser, "SUPPRESSION",
+                    "Suppression du planning : " + planning.getId());
 
-            // Ensuite, supprimer le planning
+            // Then delete the planning
             planningDeTestRepository.delete(planning);
 
             redirectAttributes.addFlashAttribute("success", "Planning de test supprimé avec succès");
@@ -272,6 +276,10 @@ public class PlanningDeTestController {
         return "redirect:/planning-de-test/liste";
     }
 
+
+
+
+
     @GetMapping("/historique/{id}")
     public String afficherDetailsModification(@PathVariable Long id, Model model) {
         HistoriquePlanning historique = HistoriqueRepo.findById(id)
@@ -281,5 +289,24 @@ public class PlanningDeTestController {
         return "historique_details"; // Créez cette vue pour afficher tous les détails
     }
 
+    @GetMapping("/liste-chef")
+    public String afficherPlanningsParEquipe(Model model, Authentication authentication) {
+        String email = authentication.getName();
+        MyUser currentUser = myUserRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
+        if (currentUser.getRole() != MyUser.Role.CHEF_PROJET) {
+            throw new AccessDeniedException("Accès réservé aux Chefs de Projet");
+        }
+
+        // Récupérer les équipes supervisées par ce chef de projet
+        List<Equipe> equipes = equipeRepository.findByChefDeProjet(currentUser);
+        model.addAttribute("equipes", equipes);
+
+        // Récupérer les plannings associés à ces équipes
+        List<PlanningDeTest> plannings = planningDeTestRepository.findByEquipeIn(equipes);
+        model.addAttribute("plannings", plannings);
+
+        return "Liste_planning_chef";
+    }
 }

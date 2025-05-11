@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestion des Test Leads</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        /* Sidebar Styles */
+        .sidebar {
+            height: 100vh;
+            width: 250px;
+            background-color: #212529;
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 2rem 1rem;
+        }
+
+        .sidebar h4 {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar a {
+            color: white;
+            display: block;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background-color: #343a40;
+        }
+
+        .logout-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 2rem;
+        }
+
+        /* Main Content Styles */
+        .main-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Table Styles */
+        .table th {
+            white-space: nowrap;
+        }
+
+        /* Button Styles */
+        .btn-add {
+            background-color: #28a745;
+            color: white;
+        }
+
+        /* Animation for table rows */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .table-row {
+            animation: fadeIn 0.3s ease-in;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar d-flex flex-column">
+    <h4>Chef de Projet</h4>
+    <a href="/admin/dashboard" class="active">
+        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+    </a>
+    <a href="/admin/test-leads">
+        <i class="bi bi-people me-2"></i>Test Leads
+    </a>
+    <a href="/admin/equipes">
+        <i class="bi bi-diagram-3 me-2"></i>Mes Équipes
+    </a>
+    <div class="logout-btn">
+        <a href="/logout" class="btn btn-outline-light w-100">
+            <i class="bi bi-box-arrow-right"></i> Déconnexion
+        </a>
+    </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+    <div class="main-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-people me-2"></i>
+                Gestion des Test Leads
+            </h2>
+            <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#addTestLeadModal">
+                <i class="bi bi-plus-circle me-1"></i> Ajouter Test Lead
+            </button>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-task me-2"></i>
+                    Liste des Test Leads
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                            <th>Email</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="lead : ${testLeads}" class="table-row">
+                            <td th:text="${lead.id}"></td>
+                            <td th:text="${lead.prenom} + ' ' + ${lead.nom}"></td>
+                            <td th:text="${lead.email}"></td>
+                            <td>
+                                <button th:attr="data-id=${lead.id}"
+                                        class="btn btn-sm btn-warning me-1 edit-btn">
+                                    <i class="bi bi-pencil"></i> Modifier
+                                </button>
+                                <button th:attr="data-id=${lead.id}"
+                                        class="btn btn-sm btn-danger delete-btn">
+                                    <i class="bi bi-trash"></i> Supprimer
+                                </button>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(testLeads)}">
+                            <td colspan="4" class="text-center text-muted">
+                                Aucun Test Lead disponible.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ajout -->
+<div class="modal fade" id="addTestLeadModal" tabindex="-1" aria-labelledby="addTestLeadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="addTestLeadModalLabel">
+                    <i class="bi bi-plus-circle me-1"></i> Nouveau Test Lead
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form th:action="@{/admin/ajouter-test-lead}" method="post">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Prénom</label>
+                            <input type="text" class="form-control" name="prenom" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nom</label>
+                            <input type="text" class="form-control" name="nom" required>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Mot de passe</label>
+                            <input type="password" class="form-control" name="password" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Créer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Modification -->
+<div class="modal fade" id="editTestLeadModal" tabindex="-1" aria-labelledby="editTestLeadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editTestLeadModalLabel">
+                    <i class="bi bi-pencil me-1"></i> Modifier Test Lead
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editTestLeadForm" method="post">
+                <input type="hidden" id="editTestLeadId" name="id">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Prénom</label>
+                            <input type="text" class="form-control" id="editPrenom" name="prenom" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nom</label>
+                            <input type="text" class="form-control" id="editNom" name="nom" required>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="editEmail" name="email" required>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Nouveau mot de passe (laisser vide pour ne pas changer)</label>
+                            <input type="password" class="form-control" name="password">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Suppression -->
+<div class="modal fade" id="deleteTestLeadModal" tabindex="-1" aria-labelledby="deleteTestLeadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteTestLeadModalLabel">
+                    <i class="bi bi-exclamation-triangle me-1"></i> Confirmation
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer ce Test Lead ? Cette action est irréversible.</p>
+                <p class="fw-bold" id="testLeadToDeleteName"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="deleteTestLeadForm" method="post" style="display: inline;">
+                    <input type="hidden" id="deleteTestLeadId" name="id">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Gestion de la modification
+        $('.edit-btn').click(function() {
+            const leadId = $(this).data('id');
+            const row = $(this).closest('tr');
+            const cells = row.find('td');
+
+            // Récupérer les données de la ligne
+            const prenomNom = cells.eq(1).text().split(' ');
+            const prenom = prenomNom[0];
+            const nom = prenomNom.slice(1).join(' ');
+            const email = cells.eq(2).text();
+
+            // Pré-remplir le formulaire
+            $('#editTestLeadId').val(leadId);
+            $('#editPrenom').val(prenom);
+            $('#editNom').val(nom);
+            $('#editEmail').val(email);
+
+            // Mettre à jour l'action du formulaire
+            $('#editTestLeadForm').attr('action', '/admin/test-leads/' + leadId + '/modifier');
+
+            // Afficher le modal
+            $('#editTestLeadModal').modal('show');
+        });
+
+        // Gestion de la suppression
+        $('.delete-btn').click(function() {
+            const leadId = $(this).data('id');
+            const leadName = $(this).closest('tr').find('td:eq(1)').text();
+
+            $('#deleteTestLeadId').val(leadId);
+            $('#testLeadToDeleteName').text('Test Lead: ' + leadName);
+            $('#deleteTestLeadForm').attr('action', '/admin/test-leads/' + leadId + '/supprimer');
+            $('#deleteTestLeadModal').modal('show');
+        });
+    });
+</script>
+
+</body>
+</html>

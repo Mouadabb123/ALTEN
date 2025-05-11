@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Planning du Projet</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .badge-status-not_started { background-color: #6c757d; }
+        .badge-status-ongoing { background-color: #ffc107; color: #000; }
+        .badge-status-ok { background-color: #198754; }
+        .badge-status-ko { background-color: #dc3545; }
+    </style>
+</head>
+<body th:replace="admin/dashboard :: body">
+<div class="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Planning du Projet: <span th:text="${projet.nom}"></span></h2>
+        <a th:href="@{'/admin/projets'}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Équipes et Test Leads</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Équipes assignées:</h6>
+                    <ul class="list-group">
+                        <li th:each="equipe : ${projet.equipes}" class="list-group-item">
+                            <span th:text="${equipe.nom}"></span>
+                            <span th:if="${equipe.testLead != null}"
+                                  class="badge bg-primary float-end"
+                                  th:text="${equipe.testLead.prenom} + ' ' + ${equipe.testLead.nom}"></span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>Test Leads assignés:</h6>
+                    <ul class="list-group">
+                        <li th:each="lead : ${projet.testLeads}" class="list-group-item">
+                            <span th:text="${lead.prenom} + ' ' + ${lead.nom}"></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5>Plannings de Test</h5>
+            <a th:href="@{'/planning-de-test/nouveau?projetId=' + ${projet.id}}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i> Ajouter un planning
+            </a>
+        </div>
+        <div class="card-body">
+            <div th:if="${#lists.isEmpty(plannings)}" class="alert alert-info">
+                Aucun planning n'a été créé pour ce projet.
+            </div>
+
+            <table th:unless="${#lists.isEmpty(plannings)}" class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Tâche</th>
+                    <th>Date Début</th>
+                    <th>Date Fin</th>
+                    <th>Statut</th>
+                    <th>Test Leads</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="planning : ${plannings}">
+                    <td th:text="${planning.tache}"></td>
+                    <td th:text="${#temporals.format(planning.dateCreation, 'dd/MM/yyyy')}"></td>
+                    <td th:text="${#temporals.format(planning.dateModification, 'dd/MM/yyyy')}"></td>
+                    <td>
+                        <span th:classappend="'badge badge-status-' + ${planning.status?.name()?.toLowerCase()}"
+                              class="badge"
+                              th:text="${planning.status?.name()?.replace('_', ' ')}">
+                        </span>
+                    </td>
+                    <td>
+                        <span th:each="lead : ${planning.testLeads}"
+                              class="badge bg-primary me-1"
+                              th:text="${lead.prenom} + ' ' + ${lead.nom}">
+                        </span>
+                    </td>
+                    <td>
+                        <a th:href="@{'/planning-de-test/' + ${planning.id} + '/modifier'}"
+                           class="btn btn-sm btn-warning"
+                           title="Modifier">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a th:href="@{'/planning-de-test/' + ${planning.id} + '/supprimer'}"
+                           class="btn btn-sm btn-danger"
+                           title="Supprimer"
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce planning ?');">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

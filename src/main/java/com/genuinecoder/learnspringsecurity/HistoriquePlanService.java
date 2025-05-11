@@ -5,11 +5,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Service
 public class HistoriquePlanService {
     @Autowired
     private HistoriquePlanDeTestRepository historiqueRepo;
+
+    @Autowired
+    private HistoriquePlanDeTestRepository historiquePlanDeTestRepository;
+
 
     public void enregistrerAction(PlanDeTest plan, MyUser utilisateur, String action, String details) {
         HistoriquePlanDeTest historique = new HistoriquePlanDeTest();
@@ -20,6 +25,17 @@ public class HistoriquePlanService {
         historique.setDateAction(LocalDateTime.now());
         historiqueRepo.save(historique);
     }
+
+    public void enregistrerSuppression(PlanDeTest plan, MyUser user) {
+        HistoriquePlanDeTest historique = new HistoriquePlanDeTest();
+        historique.setPlanId(plan.getId()); // always set it explicitly
+        historique.setAction("SUPPRESSION");
+        historique.setDateAction(LocalDateTime.now());
+        historique.setUtilisateur(user);
+        historique.setDetails("Suppression du plan " + plan.getId() + " - " + plan.getTitre());
+        historiquePlanDeTestRepository.save(historique);
+    }
+
 
     public void enregistrerModification(PlanDeTest ancien, PlanDeTest nouveau, MyUser utilisateur) {
         StringBuilder ancienne = new StringBuilder();
