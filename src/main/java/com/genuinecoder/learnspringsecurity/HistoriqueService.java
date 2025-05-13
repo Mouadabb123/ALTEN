@@ -26,6 +26,17 @@ public class HistoriqueService {
         historique.setDetails(details);
         historique.setDateAction(LocalDateTime.now());
 
+
+        // Pour les demandes de validation, enregistrer le statut
+        if ("VALIDATION_REQUEST".equals(action)) {
+            historique.setNouvelleValeur("Statut: " + planning.getValidationStatus());
+            if (planning.getValidationComment() != null) {
+                historique.setNouvelleValeur(
+                        historique.getNouvelleValeur() + " | Commentaire: " + planning.getValidationComment()
+                );
+            }
+        }
+
         historiqueRepo.save(historique);
     }
 

@@ -24,6 +24,20 @@ public class PlanningDeTest {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String commentaire;
 
+    @Enumerated(EnumType.STRING)
+    private ValidationStatus validationStatus = ValidationStatus.PENDING;
+
+    @Column(columnDefinition = "TEXT")
+    private String validationComment;
+
+    @ManyToOne
+    private MyUser validatedBy;
+
+    private LocalDateTime validationDate;
+
+    public enum ValidationStatus {
+        PENDING, APPROVED, REJECTED
+    }
 
     @Column(name = "date_creation", updatable = false)
     private LocalDateTime dateCreation;
@@ -41,6 +55,7 @@ public class PlanningDeTest {
     @ManyToOne
     @JoinColumn(name = "test_lead_id")
     private MyUser testLead;
+
 
     @PrePersist
     protected void onCreate() {
@@ -161,6 +176,38 @@ public class PlanningDeTest {
 
     public void setTestLead(MyUser testLead) {
         this.testLead = testLead;
+    }
+
+    public ValidationStatus getValidationStatus() {
+        return validationStatus;
+    }
+
+    public void setValidationStatus(ValidationStatus validationStatus) {
+        this.validationStatus = validationStatus;
+    }
+
+    public String getValidationComment() {
+        return validationComment;
+    }
+
+    public void setValidationComment(String validationComment) {
+        this.validationComment = validationComment;
+    }
+
+    public MyUser getValidatedBy() {
+        return validatedBy;
+    }
+
+    public void setValidatedBy(MyUser validatedBy) {
+        this.validatedBy = validatedBy;
+    }
+
+    public LocalDateTime getValidationDate() {
+        return validationDate;
+    }
+
+    public void setValidationDate(LocalDateTime validationDate) {
+        this.validationDate = validationDate;
     }
 
     @Override

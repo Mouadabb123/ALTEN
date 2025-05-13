@@ -141,7 +141,6 @@
                         <tr>
                             <th>Nom</th>
                             <th>Test Lead</th>
-                            <th>Membres</th>
                             <th>Actions</th>
                         </tr>
                         </thead>
@@ -155,11 +154,7 @@
                                 <span th:unless="${equipe.testLead != null}"
                                       class="badge badge-unassigned">Non assigné</span>
                             </td>
-                            <td>
-                                    <span th:each="membre : ${equipe.membres}"
-                                          th:text="${membre.prenom} + ' ' + ${membre.nom}"
-                                          class="badge bg-info text-dark me-1"></span>
-                            </td>
+
                             <td>
                                 <button th:attr="data-id=${equipe.id}"
                                         class="btn btn-sm btn-warning me-1 edit-btn">

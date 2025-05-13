@@ -173,7 +173,8 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="entry, iterStat : ${historique}">
+                <tr th:each="entry, iterStat : ${historique}"
+                    th:if="${entry.action == 'CREATION' or entry.action == 'MODIFICATION' or entry.action == 'SUPPRESSION'}">
                     <td th:text="${#temporals.format(entry.dateAction, 'dd/MM/yyyy HH:mm')}"></td>
                     <td>
                         <span th:switch="${entry.action}">

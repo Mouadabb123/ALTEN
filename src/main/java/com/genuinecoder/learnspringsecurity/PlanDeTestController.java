@@ -56,7 +56,6 @@ public class PlanDeTestController {
             @RequestParam(value = "selectedTesteurs", required = false) List<Long> selectedTesteursIds,
             @RequestParam(value = "affectationAutomatique", required = false) Boolean affectationAutomatique,
             @RequestParam(value = "nombreTesteurs", required = false) Integer nombreTesteurs,
-            @RequestParam(value = "difficulte", required = false) String difficulte,
             Authentication authentication,
             RedirectAttributes redirectAttributes) {
 
@@ -77,7 +76,7 @@ public class PlanDeTestController {
         Set<MyUser> testeursAffectes = new HashSet<>();
 
         // Logique d'affectation automatique
-        if (Boolean.TRUE.equals(affectationAutomatique) && nombreTesteurs != null && difficulte != null) {
+        if (Boolean.TRUE.equals(affectationAutomatique) && nombreTesteurs != null && planDeTest.getDifficulte() != null) {
             // Récupérer tous les testeurs disponibles avec le rôle TESTEUR
             List<MyUser> testeursDisponibles = myUserRepository.findByRoleAndDisponibilite(MyUser.Role.TESTEUR, true);
 
@@ -100,19 +99,23 @@ public class PlanDeTestController {
             // Sélectionner les meilleurs testeurs selon la difficulté
             List<MyUser> testeursSelectionnes;
 
-            if ("DIFFICILE".equalsIgnoreCase(difficulte)) {
-                // Pour les tests difficiles, prendre les plus expérimentés
-                testeursSelectionnes = testeursDisponibles.subList(0, Math.min(nombreTesteurs, testeursDisponibles.size()));
-            } else if ("MOYEN".equalsIgnoreCase(difficulte)) {
-                // Pour les tests moyens, prendre ceux du milieu de la liste
-                int middleIndex = testeursDisponibles.size() / 2;
-                int startIndex = Math.max(0, middleIndex - (nombreTesteurs / 2));
-                int endIndex = Math.min(testeursDisponibles.size(), startIndex + nombreTesteurs);
-                testeursSelectionnes = testeursDisponibles.subList(startIndex, endIndex);
-            } else {
-                // Pour les tests normaux, on peut prendre n'importe qui (ou les moins expérimentés)
-                int startIndex = Math.max(0, testeursDisponibles.size() - nombreTesteurs);
-                testeursSelectionnes = testeursDisponibles.subList(startIndex, testeursDisponibles.size());
+            switch (planDeTest.getDifficulte()) {
+                case DIFFICILE:
+                    // Pour les tests difficiles, prendre les plus expérimentés
+                    testeursSelectionnes = testeursDisponibles.subList(0, Math.min(nombreTesteurs, testeursDisponibles.size()));
+                    break;
+                case MOYEN:
+                    // Pour les tests moyens, prendre ceux du milieu de la liste
+                    int middleIndex = testeursDisponibles.size() / 2;
+                    int startIndex = Math.max(0, middleIndex - (nombreTesteurs / 2));
+                    int endIndex = Math.min(testeursDisponibles.size(), startIndex + nombreTesteurs);
+                    testeursSelectionnes = testeursDisponibles.subList(startIndex, endIndex);
+                    break;
+                case FACILE:
+                default:
+                    // Pour les tests faciles, on peut prendre les moins expérimentés
+                    int startIndexFacile = Math.max(0, testeursDisponibles.size() - nombreTesteurs);
+                    testeursSelectionnes = testeursDisponibles.subList(startIndexFacile, testeursDisponibles.size());
             }
 
             // Ajouter les testeurs sélectionnés
@@ -133,7 +136,6 @@ public class PlanDeTestController {
         return "redirect:/plan-de-test/liste";
     }
 
-
     @GetMapping("/liste")
     public String listerPlansDeTest(Model model, Authentication authentication) {
         MyUser currentUser = myUserRepository.findByEmail(authentication.getName())
@@ -145,6 +147,8 @@ public class PlanDeTestController {
 
         model.addAttribute("plans", planDeTestRepository.findAll());
         model.addAttribute("testeurs", myUserRepository.findByRole(MyUser.Role.TESTEUR));
+        model.addAttribute("difficulteValues", PlanDeTest.Difficulte.values());
+        model.addAttribute("planDeTest", new PlanDeTest());
         return "liste_plans";
     }
 

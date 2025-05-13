@@ -158,11 +158,26 @@
             display: none;
             margin-top: 10px;
         }
+        /* Style pour les commentaires */
+        .comment-cell {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .comment-cell:hover {
+            white-space: normal;
+            overflow: visible;
+            position: relative;
+            z-index: 100;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
 
-<!-- Sidebar -->
 <!-- Sidebar -->
 <div class="sidebar d-flex flex-column">
     <h4>Test Lead</h4>
@@ -175,16 +190,11 @@
     <a href="/historique-plan" ><i class="bi bi-clock-history me-2"></i>Historique du plan de test </a>
     <a href="/testeur/liste" ><i class="bi bi-people me-2"></i>Gestion des testeurs  </a>
 
-
-
-
     <div class="logout-btn">
         <a href="/logout" class="btn btn-outline-light w-100">
             <i class="bi bi-box-arrow-right"></i> Déconnexion
         </a>
     </div>
-
-
 </div>
 
 <!-- Content -->
@@ -195,8 +205,6 @@
         <div th:if="${plans.isEmpty()}">
             <p class="text-muted">Aucun plan de test disponible.</p>
         </div>
-
-
 
         <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#ajouterPlanModal">
             <i class="bi bi-plus-circle"></i> Ajouter un cas de test
@@ -214,8 +222,11 @@
                 <th data-sort="numeric">ID <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
                 <th data-sort="string">Titre <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
                 <th data-sort="string">Description <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
+                <th data-sort="string">Difficulté <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
                 <th data-sort="string">Outils <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
+                <th data-sort="string">Statut <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
                 <th data-sort="string">Testeur affecté <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
+                <th>Commentaire</th>
                 <th>Actions</th>
             </tr>
             </thead>
@@ -224,11 +235,31 @@
                 <td th:text="${plan.id}"></td>
                 <td th:text="${plan.titre}"></td>
                 <td th:text="${plan.description}"></td>
+                <td>
+                    <span th:if="${plan.difficulte == T(com.genuinecoder.learnspringsecurity.model.PlanDeTest.Difficulte).FACILE}" class="badge bg-success">Facile</span>
+                    <span th:if="${plan.difficulte == T(com.genuinecoder.learnspringsecurity.model.PlanDeTest.Difficulte).MOYEN}" class="badge bg-warning">Moyen</span>
+                    <span th:if="${plan.difficulte == T(com.genuinecoder.learnspringsecurity.model.PlanDeTest.Difficulte).DIFFICILE}" class="badge bg-danger">Difficile</span>
+                </td>
                 <td th:text="${plan.outils}"></td>
+                <td>
+                    <span th:if="${plan.status == T(com.genuinecoder.learnspringsecurity.model.PlanDeTest.TestStatus).NOT_STARTED}" class="badge bg-secondary">Non commencé</span>
+                    <span th:if="${plan.status == T(com.genuinecoder.learnspringsecurity.model.PlanDeTest.TestStatus).ONGOING}" class="badge bg-info">En cours</span>
+                    <span th:if="${plan.status == T(com.genuinecoder.learnspringsecurity.model.PlanDeTest.TestStatus).OK}" class="badge bg-success">Terminé - OK</span>
+                    <span th:if="${plan.status == T(com.genuinecoder.learnspringsecurity.model.PlanDeTest.TestStatus).KO}" class="badge bg-danger">Terminé - KO</span>
+                    <span th:if="${plan.status == T(com.genuinecoder.learnspringsecurity.model.PlanDeTest.TestStatus).BLOCKED}" class="badge bg-warning">BLOCKED</span>
+                </td>
                 <td>
                     <span th:each="testeur : ${plan.testeursAffectes}"
                           th:text="${testeur.prenom} + ' ' + ${testeur.nom}"
                           class="badge bg-info me-1"></span>
+                </td>
+                <td class="comment-cell">
+                    <span th:if="${plan.commentaire != null and not plan.commentaire.isEmpty()}"
+                          th:text="${plan.commentaire}"
+                          class="text-muted small"
+                          title="Cliquez pour voir tout le commentaire"></span>
+                    <span th:if="${plan.commentaire == null or plan.commentaire.isEmpty()}"
+                          class="text-muted small">-</span>
                 </td>
                 <td>
                     <!-- Modifier Icon -->
@@ -270,17 +301,17 @@
                             <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
                         </div>
 
-
                         <div class="col-md-6 mb-3">
                             <label for="outils" class="form-label">Outils utilisés</label>
                             <select class="form-select" id="outils" name="outils" required>
                                 <option value="Elliade">Elliade</option>
                                 <option value="XF">XF</option>
                                 <option value="GEOS">GEOS</option>
-                                <option value="VCO CRONOS"> CRONOS</option>
+                                <option value="VCO CRONOS">CRONOS</option>
                                 <option value="IFast">Pleade</option>
                             </select>
                         </div>
+
                         <!-- Champ optionnel pour préciser si "Autre" est sélectionné -->
                         <div class="col-md-6 mb-3" id="autre-outil-container" >
                             <label for="autre-outil" class="form-label">Précisez un autre outil</label>
@@ -292,18 +323,29 @@
                             <input type="text" class="form-control" id="commentaire" name="commentaire" required>
                         </div>
 
+                        <!-- Niveau de difficulté -->
+                        <div class="mb-3">
+                            <label for="difficulte" class="form-label">Niveau de difficulté</label>
+                            <select class="form-control" id="difficulte" name="difficulte" required>
+                                <option value="">-- Sélectionner une difficulté --</option>
+                                <option value="FACILE">Facile</option>
+                                <option value="MOYEN">Moyen</option>
+                                <option value="DIFFICILE">Difficile</option>
+                            </select>
+                        </div>
+
                         <!-- Options d'affectation des testeurs -->
                         <div class="mb-3">
                             <label class="form-label">Mode d'affectation des testeurs</label>
                             <div class="affectation-options">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="modeAffectation" id="affectationManuelle" value="manuelle" checked>
+                                    <input class="form-check-input" type="radio" name="affectationAutomatique" id="affectationManuelle" value="false" checked>
                                     <label class="form-check-label" for="affectationManuelle">
                                         Affectation Manuelle
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="modeAffectation" id="affectationAutomatique" value="automatique">
+                                    <input class="form-check-input" type="radio" name="affectationAutomatique" id="affectationAutomatique" value="true">
                                     <label class="form-check-label" for="affectationAutomatique">
                                         Affectation Automatique
                                     </label>
@@ -331,16 +373,6 @@
                                     <label for="nombreTesteurs" class="form-label">Nombre de testeurs à affecter automatiquement</label>
                                     <input type="number" class="form-control" id="nombreTesteurs" name="nombreTesteurs" min="1" max="10" value="1">
                                 </div>
-
-                                <div class="mb-3">
-                                    <label for="difficulte" class="form-label">Niveau de difficulté</label>
-                                    <select class="form-select" id="difficulte" name="difficulte" required>
-                                        <option value="NORMAL">Normal</option>
-                                        <option value="MOYEN">Moyen</option>
-                                        <option value="DIFFICILE">Difficile</option>
-                                    </select>
-                                </div>
-                                <input type="hidden" name="affectationAutomatique" id="affectationAutomatiqueInput" value="false">
                             </div>
                         </div>
                     </div>
@@ -492,30 +524,27 @@
         }
 
         // Gestion de l'affectation automatique des testeurs
+        // Gestion de l'affectation automatique des testeurs
         const affectationManuelle = document.getElementById('affectationManuelle');
         const affectationAutomatique = document.getElementById('affectationAutomatique');
         const affectationManuelleContainer = document.getElementById('affectationManuelleContainer');
         const nombreTesteursContainer = document.getElementById('nombreTesteursContainer');
-        const affectationAutomatiqueInput = document.getElementById('affectationAutomatiqueInput');
         const nombreTesteursInput = document.getElementById('nombreTesteurs');
-        const difficulteSelect = document.getElementById('difficulte');
 
-        // Fonction pour mettre à jour les sections d'affectation
+// Fonction pour mettre à jour les sections d'affectation
         function updateAffectationSections() {
             if (affectationManuelle.checked) {
                 affectationManuelleContainer.style.display = 'block';
                 nombreTesteursContainer.style.display = 'none';
-                affectationAutomatiqueInput.value = 'false';
 
-                if (nombreTesteursInput) nombreTesteursInput.disabled = true;
-                if (difficulteSelect) difficulteSelect.disabled = true;
+                // Ne pas désactiver le champ nombreTesteurs, juste le cacher
+                if (nombreTesteursInput) nombreTesteursInput.disabled = false;
             } else {
                 affectationManuelleContainer.style.display = 'none';
                 nombreTesteursContainer.style.display = 'block';
-                affectationAutomatiqueInput.value = 'true';
 
+                // Activer le champ nombreTesteurs
                 if (nombreTesteursInput) nombreTesteursInput.disabled = false;
-                if (difficulteSelect) difficulteSelect.disabled = false;
 
                 // Décocher toutes les cases des testeurs manuels
                 const checkboxes = document.querySelectorAll('.testeurManuel');
@@ -524,37 +553,25 @@
                 });
             }
         }
-
-        // Initialisation et écouteurs d'événements
-        if (affectationManuelle && affectationAutomatique) {
-            affectationManuelle.addEventListener('change', updateAffectationSections);
-            affectationAutomatique.addEventListener('change', updateAffectationSections);
-
-            // Initialiser l'état par défaut
-            updateAffectationSections();
-        }
-
         // Validation du formulaire avant soumission
         const form = document.querySelector('form');
         if (form) {
             form.addEventListener('submit', function(e) {
-                if (affectationAutomatique && affectationAutomatique.checked && nombreTesteursInput) {
+                const difficulteSelect = document.getElementById('difficulte');
+
+                // Vérification de la difficulté (toujours obligatoire)
+                if (!difficulteSelect || difficulteSelect.value === '') {
+                    e.preventDefault();
+                    alert('Veuillez sélectionner un niveau de difficulté');
+                    return;
+                }
+
+                // Vérification spécifique pour l'affectation automatique
+                if (affectationAutomatique.checked) {
                     const nombreTesteurs = parseInt(nombreTesteursInput.value);
-                    if (isNaN(nombreTesteurs)) {
+                    if (isNaN(nombreTesteurs) || nombreTesteurs < 1) {
                         e.preventDefault();
-                        alert('Veuillez entrer un nombre valide de testeurs');
-                        return;
-                    }
-
-                    if (nombreTesteurs < 1) {
-                        e.preventDefault();
-                        alert('Le nombre de testeurs doit être au moins 1');
-                        return;
-                    }
-
-                    if (!difficulteSelect || difficulteSelect.value === '') {
-                        e.preventDefault();
-                        alert('Veuillez sélectionner un niveau de difficulté');
+                        alert('Veuillez entrer un nombre valide de testeurs (au moins 1)');
                         return;
                     }
                 }
@@ -567,11 +584,7 @@
 
         if (outilsSelect && autreOutilContainer) {
             outilsSelect.addEventListener('change', function() {
-                if (this.value === 'Autre') {
-                    autreOutilContainer.style.display = 'block';
-                } else {
-                    autreOutilContainer.style.display = 'none';
-                }
+                autreOutilContainer.style.display = this.value === 'Autre' ? 'block' : 'none';
             });
 
             // Initialiser l'état au chargement
@@ -579,7 +592,5 @@
         }
     });
 </script>
-
-
 </body>
 </html>

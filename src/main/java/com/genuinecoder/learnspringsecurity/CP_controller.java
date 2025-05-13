@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -55,6 +56,7 @@ public class CP_controller {
     @PostMapping("/ajouter-test-lead")
     public String ajouterTestLead(@ModelAttribute MyUser testLead, RedirectAttributes redirectAttributes) {
         testLead.setRole(MyUser.Role.TEST_LEADER);
+
         myUserRepository.save(testLead);
         redirectAttributes.addFlashAttribute("success", "Test Lead ajouté avec succès");
         return "redirect:/admin/test-leads";
@@ -218,5 +220,183 @@ public class CP_controller {
         equipeRepository.deleteById(id);
         redirectAttributes.addFlashAttribute("success", "Équipe supprimée avec succès");
         return "redirect:/admin/equipes";
+    }
+
+    @GetMapping("/plannings-a-valider")
+    public String planningsAValider(Model model, Authentication authentication) {
+        String email = authentication.getName();
+        MyUser currentUser = myUserRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
+
+        if (currentUser.getRole() != MyUser.Role.CHEF_PROJET) {
+            throw new AccessDeniedException("Accès réservé aux chefs de projet");
+        }
+
+        // Récupérer les équipes du chef de projet
+        List<Equipe> equipes = equipeRepository.findByChefDeProjet(currentUser);
+
+        // Récupérer les plannings en attente de validation
+        List<PlanningDeTest> plannings = planningDeTestRepository.findByEquipeInAndValidationStatus(
+                equipes, PlanningDeTest.ValidationStatus.PENDING);
+
+        model.addAttribute("plannings", plannings);
+        return "plannings_a_valider";
+    }
+
+    @PostMapping("/valider-tous-plannings")
+    public String validerTousPlannings(@RequestParam(required = false) String commentaire,
+                                       Authentication authentication,
+                                       RedirectAttributes redirectAttributes) {
+
+        String email = authentication.getName();
+        MyUser currentUser = myUserRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
+
+        if (currentUser.getRole() != MyUser.Role.CHEF_PROJET) {
+            throw new AccessDeniedException("Accès réservé aux chefs de projet");
+        }
+
+        // Récupérer les équipes du chef de projet
+        List<Equipe> equipes = equipeRepository.findByChefDeProjet(currentUser);
+
+        // Récupérer tous les plannings en attente de cette équipe
+        List<PlanningDeTest> plannings = planningDeTestRepository.findByEquipeInAndValidationStatus(
+                equipes, PlanningDeTest.ValidationStatus.PENDING);
+
+        // Valider tous les plannings
+        for (PlanningDeTest planning : plannings) {
+            planning.setValidationStatus(PlanningDeTest.ValidationStatus.APPROVED);
+            planning.setValidationComment(commentaire);
+            planning.setValidatedBy(currentUser);
+            planning.setValidationDate(LocalDateTime.now());
+        }
+
+        planningDeTestRepository.saveAll(plannings);
+
+        redirectAttributes.addFlashAttribute("success",
+                "Tous les plannings (" + plannings.size() + ") ont été validés avec succès");
+        return "redirect:/admin/equipes/" + equipes.get(0).getId() + "/plannings";
+    }
+
+    @PostMapping("/rejeter-tous-plannings")
+    public String rejeterTousPlannings(@RequestParam String commentaire,
+                                       Authentication authentication,
+                                       RedirectAttributes redirectAttributes) {
+
+        String email = authentication.getName();
+        MyUser currentUser = myUserRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
+
+        if (currentUser.getRole() != MyUser.Role.CHEF_PROJET) {
+            throw new AccessDeniedException("Accès réservé aux chefs de projet");
+        }
+
+        // Récupérer les équipes du chef de projet
+        List<Equipe> equipes = equipeRepository.findByChefDeProjet(currentUser);
+
+        // Récupérer tous les plannings en attente de cette équipe
+        List<PlanningDeTest> plannings = planningDeTestRepository.findByEquipeInAndValidationStatus(
+                equipes, PlanningDeTest.ValidationStatus.PENDING);
+
+        // Rejeter tous les plannings
+        for (PlanningDeTest planning : plannings) {
+            planning.setValidationStatus(PlanningDeTest.ValidationStatus.REJECTED);
+            planning.setValidationComment(commentaire);
+            planning.setValidatedBy(currentUser);
+            planning.setValidationDate(LocalDateTime.now());
+        }
+
+        planningDeTestRepository.saveAll(plannings);
+
+        redirectAttributes.addFlashAttribute("warning",
+                "Tous les plannings (" + plannings.size() + ") ont été rejetés");
+        return "redirect:/admin/equipes/" + equipes.get(0).getId() + "/plannings";
+    }
+
+
+
+// Add these methods to your CP_controller class
+
+    // Get the form for modifying a Test Lead
+    @GetMapping("/test-leads/{id}/modifier")
+    public String modifierTestLeadForm(@PathVariable Long id, Model model, Authentication authentication) {
+        String email = authentication.getName();
+        MyUser currentUser = myUserRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
+
+        if (currentUser.getRole() != MyUser.Role.CHEF_PROJET) {
+            throw new AccessDeniedException("Accès réservé aux chefs de projet");
+        }
+
+        MyUser testLead = myUserRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Test Lead invalide"));
+
+        // Verify this is actually a TEST_LEADER
+        if (testLead.getRole() != MyUser.Role.TEST_LEADER) {
+            throw new IllegalArgumentException("L'utilisateur n'est pas un Test Lead");
+        }
+
+        model.addAttribute("testLead", testLead);
+        model.addAttribute("currentUser", currentUser);
+
+        return "modifier_test_lead";
+    }
+
+    // Process the modification of a Test Lead
+    @PostMapping("/test-leads/{id}/modifier")
+    public String modifierTestLead(@PathVariable Long id,
+                                   @RequestParam String nom,
+                                   @RequestParam String prenom,
+                                   @RequestParam String email,
+                                   @RequestParam(required = false) String password,
+                                   RedirectAttributes redirectAttributes) {
+
+        MyUser testLead = myUserRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Test Lead invalide"));
+
+        // Update the test lead information
+        testLead.setNom(nom);
+        testLead.setPrenom(prenom);
+        testLead.setEmail(email);
+
+        // Update password only if provided
+        if (password != null && !password.isEmpty()) {
+            testLead.setPassword(password);
+            // In a real application, you should encrypt this password before saving
+            // passwordEncoder.encode(password)
+        }
+
+        // Ensure role remains TEST_LEADER
+        testLead.setRole(MyUser.Role.TEST_LEADER);
+
+
+
+        myUserRepository.save(testLead);
+
+        redirectAttributes.addFlashAttribute("success", "Test Lead modifié avec succès");
+        return "redirect:/admin/test-leads";
+    }
+
+    @PostMapping("/test-leads/{id}/supprimer")
+    public String supprimerTestLead(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            // Vérifier si le Test Lead existe
+            MyUser testLead = myUserRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Test Lead invalide"));
+
+            // Vérifier que c'est bien un Test Lead
+            if (testLead.getRole() != MyUser.Role.TEST_LEADER) {
+                throw new IllegalArgumentException("L'utilisateur n'est pas un Test Lead");
+            }
+
+            // Supprimer le Test Lead
+            myUserRepository.delete(testLead);
+
+            redirectAttributes.addFlashAttribute("success", "Test Lead supprimé avec succès");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erreur lors de la suppression du Test Lead: " + e.getMessage());
+        }
+
+        return "redirect:/admin/test-leads";
     }
 }

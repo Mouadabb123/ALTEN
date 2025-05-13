@@ -45,6 +45,20 @@
 <!-- Content -->
 <div class="content">
     <h2 class="mb-4">Plannings de test pour l'équipe: <span th:text="${equipe.nom}"></span></h2>
+    <div class="mb-4">
+        <button type="button" class="btn btn-success me-2"
+                data-bs-toggle="modal"
+                data-bs-target="#validateAllModal"
+                th:disabled="${#lists.isEmpty(plannings)}">
+            <i class="bi bi-check-all"></i> Valider tous
+        </button>
+        <button type="button" class="btn btn-danger"
+                data-bs-toggle="modal"
+                data-bs-target="#rejectAllModal"
+                th:disabled="${#lists.isEmpty(plannings)}">
+            <i class="bi bi-x-circle"></i> Rejeter tous
+        </button>
+    </div>
 
     <div class="card mb-4">
         <div class="card-header">
@@ -58,6 +72,7 @@
                     <th>Date Début</th>
                     <th>Date Fin</th>
                     <th>Test Lead</th>
+                    <th>Commentaire</th>
                     <th>Actions</th>
                 </tr>
                 </thead>
@@ -71,12 +86,18 @@
                               th:text="${lead.prenom} + ' ' + ${lead.nom}"
                               class="badge bg-primary me-1"></span>
                     </td>
+                    <td th:text="${planning.commentaire}"></td>
                     <td>
-                        <a th:href="@{'/planning-de-test/' + ${planning.id}}"
-                           class="btn btn-sm btn-info">
-                            <i class="bi bi-eye"></i> Détails
-                        </a>
+                        <span th:switch="${planning.validationStatus.name()}">
+                            <span th:case="'APPROVED'" class="badge bg-success">Validé</span>
+                            <span th:case="'REJECTED'" class="badge bg-danger">Refusé</span>
+                            <span th:case="*" class="badge bg-warning">En attente</span>
+                        </span>
+                        <small th:if="${planning.validationComment}"
+                               class="d-block text-muted"
+                               th:text="${planning.validationComment}"></small>
                     </td>
+
                 </tr>
                 </tbody>
             </table>
@@ -90,7 +111,59 @@
         <i class="bi bi-arrow-left"></i> Retour à la liste des équipes
     </a>
 </div>
+<!-- Modal pour valider tous les plannings -->
+<div class="modal fade" id="validateAllModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form th:action="@{/admin/valider-tous-plannings}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Validation de tous les plannings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Commentaire (optionnel)</label>
+                        <textarea name="commentaire" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="alert alert-info">
+                        Vous êtes sur le point de valider <span th:text="${#lists.size(plannings)}"></span> plannings.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">Confirmer la validation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
+<!-- Modal pour rejeter tous les plannings -->
+<div class="modal fade" id="rejectAllModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form th:action="@{/admin/rejeter-tous-plannings}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Rejet de tous les plannings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Commentaire (obligatoire)</label>
+                        <textarea name="commentaire" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="alert alert-warning">
+                        Vous êtes sur le point de rejeter <span th:text="${#lists.size(plannings)}"></span> plannings.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger">Confirmer le rejet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

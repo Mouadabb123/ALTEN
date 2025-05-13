@@ -77,9 +77,51 @@
         .table-row {
             animation: fadeIn 0.3s ease-in;
         }
+
+        /* Validation styles */
+        .password-hint {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        .password-hint.valid {
+            color: #198754;
+        }
+
+        .password-hint.invalid {
+            color: #dc3545;
+        }
+
+        /* Flash messages */
+        .alert-flash {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1100;
+            animation: fadeInOut 5s ease-in-out;
+            opacity: 0;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
     </style>
 </head>
 <body>
+
+<!-- Messages Flash -->
+<div th:if="${success}" class="alert alert-success alert-flash alert-dismissible fade show" role="alert">
+    <span th:text="${success}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<div th:if="${error}" class="alert alert-danger alert-flash alert-dismissible fade show" role="alert">
+    <span th:text="${error}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
 
 <!-- Sidebar -->
 <div class="sidebar d-flex flex-column">
@@ -170,8 +212,11 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form th:action="@{/admin/ajouter-test-lead}" method="post">
+            <form id="addTestLeadForm" th:action="@{/admin/ajouter-test-lead}" method="post" onsubmit="return validateAddForm()">
                 <div class="modal-body">
+                    <!-- Message d'erreur spécifique pour email existant -->
+                    <div th:if="${emailExistsError}" class="alert alert-danger" th:text="${emailExistsError}"></div>
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Prénom</label>
@@ -183,11 +228,24 @@
                         </div>
                         <div class="col-md-12 mb-3">
                             <label class="form-label">Email</label>
-                            <input type="email" class="form-control" name="email" required>
+                            <input type="email" class="form-control" id="addEmail" name="email" required>
+                            <small class="text-muted">L'email doit se terminer par @alten.com</small>
+                            <div id="addEmailError" class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-12 mb-3">
                             <label class="form-label">Mot de passe</label>
-                            <input type="password" class="form-control" name="password" required>
+                            <input type="password" class="form-control" id="addPassword" name="password" required>
+                            <div id="passwordStrength" class="password-hint">
+                                Le mot de passe doit contenir au moins:
+                                <ul>
+                                    <li id="length" class="invalid">8 caractères minimum</li>
+                                    <li id="uppercase" class="invalid">1 majuscule</li>
+                                    <li id="lowercase" class="invalid">1 minuscule</li>
+                                    <li id="number" class="invalid">1 chiffre</li>
+                                    <li id="special" class="invalid">1 caractère spécial</li>
+                                </ul>
+                            </div>
+                            <div id="addPasswordError" class="invalid-feedback"></div>
                         </div>
                     </div>
                 </div>
@@ -210,9 +268,12 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="editTestLeadForm" method="post">
+            <form id="editTestLeadForm" method="post" onsubmit="return validateEditForm()">
                 <input type="hidden" id="editTestLeadId" name="id">
                 <div class="modal-body">
+                    <!-- Message d'erreur spécifique pour email existant -->
+                    <div th:if="${emailExistsError}" class="alert alert-danger" th:text="${emailExistsError}"></div>
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Prénom</label>
@@ -225,10 +286,23 @@
                         <div class="col-md-12 mb-3">
                             <label class="form-label">Email</label>
                             <input type="email" class="form-control" id="editEmail" name="email" required>
+                            <small class="text-muted">L'email doit se terminer par @alten.com</small>
+                            <div id="editEmailError" class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-12 mb-3">
                             <label class="form-label">Nouveau mot de passe (laisser vide pour ne pas changer)</label>
-                            <input type="password" class="form-control" name="password">
+                            <input type="password" class="form-control" id="editPassword" name="password">
+                            <div id="editPasswordStrength" class="password-hint" style="display: none;">
+                                Le mot de passe doit contenir au moins:
+                                <ul>
+                                    <li id="editLength" class="invalid">8 caractères minimum</li>
+                                    <li id="editUppercase" class="invalid">1 majuscule</li>
+                                    <li id="editLowercase" class="invalid">1 minuscule</li>
+                                    <li id="editNumber" class="invalid">1 chiffre</li>
+                                    <li id="editSpecial" class="invalid">1 caractère spécial</li>
+                                </ul>
+                            </div>
+                            <div id="editPasswordError" class="invalid-feedback"></div>
                         </div>
                     </div>
                 </div>
@@ -308,6 +382,169 @@
             $('#testLeadToDeleteName').text('Test Lead: ' + leadName);
             $('#deleteTestLeadForm').attr('action', '/admin/test-leads/' + leadId + '/supprimer');
             $('#deleteTestLeadModal').modal('show');
+        });
+
+        // Validation en temps réel pour l'email d'ajout
+        $('#addEmail').on('input', function() {
+            validateEmail(this, 'addEmailError');
+        });
+
+        // Validation en temps réel pour le mot de passe d'ajout
+        $('#addPassword').on('input', function() {
+            validatePassword(this, 'addPasswordError', 'length', 'uppercase', 'lowercase', 'number', 'special');
+        });
+
+        // Validation en temps réel pour l'email de modification
+        $('#editEmail').on('input', function() {
+            validateEmail(this, 'editEmailError');
+        });
+
+        // Validation en temps réel pour le mot de passe de modification
+        $('#editPassword').on('input', function() {
+            if (this.value.length > 0) {
+                $('#editPasswordStrength').show();
+                validatePassword(this, 'editPasswordError', 'editLength', 'editUppercase', 'editLowercase', 'editNumber', 'editSpecial');
+            } else {
+                $('#editPasswordStrength').hide();
+            }
+        });
+    });
+
+    function validateEmail(input, errorElementId) {
+        const email = input.value;
+        const errorElement = document.getElementById(errorElementId);
+
+        if (!email.endsWith('@alten.com')) {
+            input.classList.add('is-invalid');
+            errorElement.textContent = "L'email doit se terminer par @alten.com";
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            errorElement.textContent = "";
+            return true;
+        }
+    }
+
+    function validatePassword(input, errorElementId, lengthId, uppercaseId, lowercaseId, numberId, specialId) {
+        const password = input.value;
+        const errorElement = document.getElementById(errorElementId);
+        let isValid = true;
+
+        // Vérifier la longueur
+        if (password.length >= 8) {
+            document.getElementById(lengthId).classList.add('valid');
+            document.getElementById(lengthId).classList.remove('invalid');
+        } else {
+            document.getElementById(lengthId).classList.add('invalid');
+            document.getElementById(lengthId).classList.remove('valid');
+            isValid = false;
+        }
+
+        // Vérifier les majuscules
+        if (/[A-Z]/.test(password)) {
+            document.getElementById(uppercaseId).classList.add('valid');
+            document.getElementById(uppercaseId).classList.remove('invalid');
+        } else {
+            document.getElementById(uppercaseId).classList.add('invalid');
+            document.getElementById(uppercaseId).classList.remove('valid');
+            isValid = false;
+        }
+
+        // Vérifier les minuscules
+        if (/[a-z]/.test(password)) {
+            document.getElementById(lowercaseId).classList.add('valid');
+            document.getElementById(lowercaseId).classList.remove('invalid');
+        } else {
+            document.getElementById(lowercaseId).classList.add('invalid');
+            document.getElementById(lowercaseId).classList.remove('valid');
+            isValid = false;
+        }
+
+        // Vérifier les chiffres
+        if (/[0-9]/.test(password)) {
+            document.getElementById(numberId).classList.add('valid');
+            document.getElementById(numberId).classList.remove('invalid');
+        } else {
+            document.getElementById(numberId).classList.add('invalid');
+            document.getElementById(numberId).classList.remove('valid');
+            isValid = false;
+        }
+
+        // Vérifier les caractères spéciaux
+        if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+            document.getElementById(specialId).classList.add('valid');
+            document.getElementById(specialId).classList.remove('invalid');
+        } else {
+            document.getElementById(specialId).classList.add('invalid');
+            document.getElementById(specialId).classList.remove('valid');
+            isValid = false;
+        }
+
+        if (password.length > 0 && !isValid) {
+            input.classList.add('is-invalid');
+            errorElement.textContent = "Le mot de passe ne respecte pas les exigences de sécurité";
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            errorElement.textContent = "";
+            return isValid;
+        }
+    }
+
+    function validateAddForm() {
+        const emailValid = validateEmail(document.getElementById('addEmail'), 'addEmailError');
+        const passwordValid = validatePassword(
+            document.getElementById('addPassword'),
+            'addPasswordError',
+            'length',
+            'uppercase',
+            'lowercase',
+            'number',
+            'special'
+        );
+
+        return emailValid && passwordValid;
+    }
+
+    function validateEditForm() {
+        const emailValid = validateEmail(document.getElementById('editEmail'), 'editEmailError');
+        const passwordInput = document.getElementById('editPassword');
+        let passwordValid = true;
+
+        // Valider le mot de passe seulement s'il est fourni
+        if (passwordInput.value.length > 0) {
+            passwordValid = validatePassword(
+                passwordInput,
+                'editPasswordError',
+                'editLength',
+                'editUppercase',
+                'editLowercase',
+                'editNumber',
+                'editSpecial'
+            );
+        }
+
+        return emailValid && passwordValid;
+    }
+
+    // Gestion des messages flash
+    document.addEventListener('DOMContentLoaded', function() {
+        // Afficher les messages flash
+        const alerts = document.querySelectorAll('.alert-flash');
+        alerts.forEach(alert => {
+            alert.style.opacity = 1;
+            setTimeout(() => {
+                alert.style.opacity = 0;
+                setTimeout(() => alert.remove(), 500);
+            }, 4500);
+        });
+
+        // Fermer les messages flash manuellement
+        document.querySelectorAll('[data-bs-dismiss="alert"]').forEach(button => {
+            button.addEventListener('click', function() {
+                this.closest('.alert').style.opacity = 0;
+                setTimeout(() => this.closest('.alert').remove(), 500);
+            });
         });
     });
 </script>

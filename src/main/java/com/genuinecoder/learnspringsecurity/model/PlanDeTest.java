@@ -25,9 +25,32 @@ public class PlanDeTest {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String commentaire;
 
+    @Column(length = 20)
     @Enumerated(EnumType.STRING)
     private TestStatus status = TestStatus.NOT_STARTED;
 
+    @Enumerated(EnumType.STRING)
+    private Difficulte difficulte;
+
+    public enum Difficulte {
+        FACILE("Facile"),
+        MOYEN("Moyen"),
+        DIFFICILE("Difficile");
+
+        private final String displayName;
+
+        Difficulte(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+        @Override
+        public String toString() {
+            return this.name(); // Important pour la sérialisation/désérialisation
+        }
+        }
     @ManyToOne
     @JoinColumn(name = "status_updated_by_id")
     private MyUser statusUpdatedBy;
@@ -38,7 +61,7 @@ public class PlanDeTest {
 
 
     public enum TestStatus {
-        NOT_STARTED, ONGOING, OK, KO
+        NOT_STARTED, ONGOING, OK, KO , BLOCKED
     }
 
     @ManyToMany
@@ -55,8 +78,20 @@ public class PlanDeTest {
             joinColumns = @JoinColumn(name = "plan_id"),
             inverseJoinColumns = @JoinColumn(name = "testeur_id")
     )
+
     private Set<MyUser> testeursAffectes = new HashSet<>();
 
+    @ManyToOne
+    @JoinColumn(name = "equipe_id")
+    private Equipe equipe;
+
+    public Equipe getEquipe() {
+        return equipe;
+    }
+
+    public void setEquipe(Equipe equipe) {
+        this.equipe = equipe;
+    }
 
     // Constructors
     public PlanDeTest() {}
@@ -150,6 +185,13 @@ public class PlanDeTest {
     }
 
 
+    public Difficulte getDifficulte() {
+        return difficulte;
+    }
+
+    public void setDifficulte(Difficulte difficulte) {
+        this.difficulte = difficulte;
+    }
 
     @Override
     public String toString() {
@@ -160,6 +202,7 @@ public class PlanDeTest {
                 ", outils='" + outils + '\'' +
                 ", commentaire='" + commentaire + '\'' +
                 ", status=" + status +
+                ", difficulte=" + difficulte +
                 ", statusUpdatedBy=" + statusUpdatedBy +
                 ", statusUpdateDate=" + statusUpdateDate +
                 ", testLeads=" + testLeads +

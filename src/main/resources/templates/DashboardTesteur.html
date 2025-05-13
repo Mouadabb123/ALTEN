@@ -72,6 +72,10 @@
             background-color: #dc3545;
             color: white;
         }
+        .status-BLOCKED {
+            background-color: #dc9135;
+            color: white;
+        }
 
     </style>
 </head>
@@ -160,6 +164,12 @@
                                     <form th:action="@{/testeur/{id}/changer-statut(id=${plan.id})}" method="post">
                                         <input type="hidden" name="nouveauStatut" value="KO"/>
                                         <button type="submit" class="dropdown-item">KO</button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form th:action="@{/testeur/{id}/changer-statut(id=${plan.id})}" method="post">
+                                        <input type="hidden" name="nouveauStatut" value="BLOCKED"/>
+                                        <button type="submit" class="dropdown-item">Blocked</button>
                                     </form>
                                 </li>
                             </ul>

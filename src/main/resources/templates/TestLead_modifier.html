@@ -44,14 +44,8 @@
                     <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
                     <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
-                    <!-- Email validation error -->
-                    <div th:if="${emailError}" class="alert alert-danger" th:text="${emailError}"></div>
-
-                    <!-- Password validation error -->
-                    <div th:if="${passwordError}" class="alert alert-danger" th:text="${passwordError}"></div>
-
                     <!-- Form for updating Test Lead -->
-                    <form th:action="@{/admin/test-leads/{id}/modifier(id=${testLead.id})}" method="post" onsubmit="return validateForm()">
+                    <form th:action="@{/admin/test-leads/{id}/modifier(id=${testLead.id})}" method="post">
                         <div class="mb-3">
                             <label for="nom" class="form-label">Nom</label>
                             <input type="text" class="form-control" id="nom" name="nom"
@@ -66,18 +60,12 @@
                             <label for="email" class="form-label">Email</label>
                             <input type="email" class="form-control" id="email" name="email"
                                    th:value="${testLead.email}" required>
-                            <small class="text-muted">L'email doit se terminer par @alten.com</small>
-                            <div id="emailError" class="invalid-feedback"></div>
                         </div>
                         <div class="mb-3">
                             <label for="password" class="form-label">Mot de passe (laisser vide pour conserver)</label>
                             <input type="password" class="form-control" id="password" name="password"
                                    placeholder="Nouveau mot de passe">
-                            <small class="text-muted">
-                                Le mot de passe doit contenir au moins 8 caractères, dont une majuscule,
-                                une minuscule, un chiffre et un caractère spécial.
-                            </small>
-                            <div id="passwordError" class="invalid-feedback"></div>
+                            <small class="text-muted">Laissez ce champ vide pour conserver le mot de passe actuel.</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Rôle</label>
@@ -97,61 +85,5 @@
 
 <!-- Bootstrap JS if needed -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-    function validateForm() {
-        // Email validation
-        const emailInput = document.getElementById('email');
-        const email = emailInput.value;
-        let isValid = true;
-
-        if (!email.endsWith('@alten.com')) {
-            emailInput.classList.add('is-invalid');
-            document.getElementById('emailError').textContent = "L'email doit se terminer par @alten.com";
-            isValid = false;
-        } else {
-            emailInput.classList.remove('is-invalid');
-        }
-
-        // Password validation (only if password is provided)
-        const passwordInput = document.getElementById('password');
-        const password = passwordInput.value;
-
-        if (password && password.length > 0) {
-            // Password strength validation
-            const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
-            if (!strongRegex.test(password)) {
-                passwordInput.classList.add('is-invalid');
-                document.getElementById('passwordError').textContent =
-                    "Le mot de passe doit contenir au moins 8 caractères, dont une majuscule, une minuscule, un chiffre et un caractère spécial.";
-                isValid = false;
-            } else {
-                passwordInput.classList.remove('is-invalid');
-            }
-        }
-
-        return isValid;
-    }
-
-    // Add event listeners for real-time validation
-    document.getElementById('email').addEventListener('input', function() {
-        if (this.value.endsWith('@alten.com')) {
-            this.classList.remove('is-invalid');
-        }
-    });
-
-    document.getElementById('password').addEventListener('input', function() {
-        if (this.value.length === 0) {
-            this.classList.remove('is-invalid');
-            return;
-        }
-
-        const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-        if (strongRegex.test(this.value)) {
-            this.classList.remove('is-invalid');
-        }
-    });
-</script>
 </body>
 </html>

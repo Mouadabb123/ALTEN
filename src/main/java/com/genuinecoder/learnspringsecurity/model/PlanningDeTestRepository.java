@@ -10,6 +10,6 @@ public interface PlanningDeTestRepository extends JpaRepository<PlanningDeTest, 
     List<PlanningDeTest> findByEquipeIn(List<Equipe> equipes);
     List<PlanningDeTest> findByEquipe(Equipe equipe);
 
-
-
+    List<PlanningDeTest> findByEquipeInAndValidationStatus(List<Equipe> equipes, PlanningDeTest.ValidationStatus status);
+    List<PlanningDeTest> findByTestLeadsContains(MyUser testLead);
 }

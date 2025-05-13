@@ -43,9 +43,16 @@ public class HistoriqueController {
         MyUser currentUser = userRepo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
 
-        List<HistoriquePlanning> historique = historiqueRepo.findByUtilisateurIdOrderByDateActionDesc(currentUser.getId());
-        model.addAttribute("historique", historique);
+        List<HistoriquePlanning> historique = historiqueRepo.findByUtilisateurIdOrderByDateActionDesc(currentUser.getId())
+                .stream()
+                .filter(h -> h.getAction() != null && (
+                        h.getAction().equalsIgnoreCase("CREATION") ||
+                                h.getAction().equalsIgnoreCase("MODIFICATION") ||
+                                h.getAction().equalsIgnoreCase("SUPPRESSION")
+                ))
+                .toList(); // or .collect(Collectors.toList()) if you're using Java <16
 
+        model.addAttribute("historique", historique);
         return "historique";
     }
 }

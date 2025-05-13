@@ -5,7 +5,6 @@
     <title>Liste des Plannings de Test</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -20,12 +19,10 @@
             left: 0;
             padding: 2rem 1rem;
         }
-
         .sidebar h4 {
             text-align: center;
             margin-bottom: 2rem;
         }
-
         .sidebar a {
             color: white;
             display: block;
@@ -34,11 +31,9 @@
             border-radius: 5px;
             margin-bottom: 10px;
         }
-
         .sidebar a:hover, .sidebar a.active {
             background-color: #343a40;
         }
-
         .logout-btn {
             position: absolute;
             bottom: 20px;
@@ -46,77 +41,51 @@
             transform: translateX(-50%);
             width: 90%;
         }
-
         .content {
             margin-left: 250px;
             padding: 2rem;
         }
-
-        /* Styling for the main content container */
+        /* Main content styles */
         .main-container {
             background-color: white;
             padding: 3rem;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-
         .main-container h2 {
             font-size: 2rem;
             margin-bottom: 1.5rem;
             color: #333;
         }
-
-        .btn-success {
-            background-color: #28a745;
-            border-color: #28a745;
-        }
-
-        .btn-success:hover {
-            background-color: #218838;
-            border-color: #1e7e34;
-        }
-
+        /* Table styles */
         .table {
             border-radius: 8px;
             overflow: hidden;
         }
-
         .table th, .table td {
             padding: 12px 15px;
+            vertical-align: middle;
         }
-
         .table-striped tbody tr:nth-of-type(odd) {
             background-color: #f9f9f9;
         }
-
-        .modal-content {
-            border-radius: 8px;
+        /* Button styles */
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
         }
-
-        .modal-header, .modal-footer {
-            background-color: #f8f9fa;
-            border-radius: 8px;
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
         }
-
-        .modal-header h5 {
-            color: #333;
-        }
-
-        /* Styles pour le tri et la recherche */
-        .sort-icon {
-            cursor: pointer;
-            margin-left: 5px;
-        }
-
+        /* Search and filter styles */
         .search-container {
             margin-bottom: 20px;
             position: relative;
         }
-
         .search-container input {
             padding-left: 40px;
         }
-
         .search-icon {
             position: absolute;
             left: 15px;
@@ -124,64 +93,89 @@
             transform: translateY(-50%);
             color: #6c757d;
         }
-
-        .table th {
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        /* Animation pour indiquer que les plans sont filtrés */
-        @keyframes highlight {
-            0% { background-color: #fff2cc; }
-            100% { background-color: transparent; }
-        }
-
-        .highlight-row {
-            animation: highlight 1.5s ease;
-        }
-
-        /* Styles pour la recherche par date */
         .date-search-container {
             display: flex;
             gap: 15px;
             margin-bottom: 20px;
             align-items: center;
         }
-
         .date-search-container .date-group {
             flex: 1;
         }
-
-        .date-search-container button {
-            align-self: flex-end;
-            height: 38px;
+        /* Status badge styles */
+        .badge {
+            padding: 0.5em 0.75em;
+            font-size: 0.85em;
+            font-weight: 500;
+            border-radius: 0.375rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-
-        .truncate-text {
-            max-width: 200px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .badge:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
         }
-
-        /* Style pour l'affichage du commentaire complet */
+        .badge small {
+            font-size: 0.7em;
+            opacity: 0.9;
+            display: block;
+            margin-top: 0.2em;
+        }
+        /* Tooltip styles */
         .tooltip-inner {
             max-width: 300px;
             text-align: left;
+        }
+        /* Action buttons */
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        /* Validation details modal */
+        .validation-detail-item {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        .validation-detail-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .validation-detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .validation-comment {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        /* Animation */
+        @keyframes highlight {
+            0% { background-color: #fff2cc; }
+            100% { background-color: transparent; }
+        }
+        .highlight-row {
+            animation: highlight 1.5s ease;
         }
     </style>
 </head>
 <body>
 <div class="sidebar d-flex flex-column">
     <h4>Test Lead</h4>
-    <a href="/plan-de-test/liste" >
+    <a href="/plan-de-test/liste">
         <i class="bi bi-list-task me-2"></i>Plan de Test
     </a>
-    <a href="/planning-de-test/liste" >
+    <a href="/planning-de-test/liste" class="active">
         <i class="bi bi-calendar-event me-2"></i>Planning de Test
     </a>
-    <a href="/historique" ><i class="bi bi-clock-history me-2"></i>Historique du planning de test  </a>
-    <a href="/testeur/liste" ><i class="bi bi-people me-2"></i>Gestion des testeurs  </a>
+    <a href="/historique"><i class="bi bi-clock-history me-2"></i>Historique du planning de test</a>
+    <a href="/testeur/liste"><i class="bi bi-people me-2"></i>Gestion des testeurs</a>
 
     <div class="logout-btn">
         <a href="/logout" class="btn btn-outline-light w-100">
@@ -189,6 +183,7 @@
         </a>
     </div>
 </div>
+
 <!-- Content -->
 <div class="content">
     <div class="main-container">
@@ -198,17 +193,22 @@
             <p class="text-muted">Aucun planning de test disponible.</p>
         </div>
 
-        <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#ajouterPlanningModal">
-            <i class="bi bi-plus-circle"></i> Ajouter une tache
-        </button>
+        <div class="d-flex mb-3">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#ajouterPlanningModal">
+                <i class="bi bi-plus-circle"></i> Ajouter une tache
+            </button>
+            <button class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#demanderValidationModal"
+                    th:disabled="${#lists.isEmpty(plannings)}">
+                <i class="bi bi-send-check"></i> Demander validation pour tous
+            </button>
+        </div>
 
-        <!-- Recherche textuelle -->
+        <!-- Search and filter section -->
         <div class="search-container">
             <i class="bi bi-search search-icon"></i>
             <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un planning...">
         </div>
 
-        <!-- Recherche par date -->
         <div class="date-search-container">
             <div class="date-group">
                 <label for="startDate" class="form-label">Date début</label>
@@ -226,94 +226,196 @@
             </button>
         </div>
 
+        <!-- Planning table -->
         <table class="table table-striped" id="planningsTable" th:if="${not #lists.isEmpty(plannings)}">
             <thead>
             <tr>
-                <th data-sort="numeric">ID <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
-                <th data-sort="string">Tâche <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
-                <th data-sort="string">Date Début <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
-                <th data-sort="string">Date Fin <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
-                <th data-sort="string">Commentaire <span class="sort-icon"><i class="bi bi-arrow-down-up"></i></span></th>
+                <th data-sort="numeric">ID</th>
+                <th data-sort="string">Tâche</th>
+                <th data-sort="string">Date Début</th>
+                <th data-sort="string">Date Fin</th>
+                <th data-sort="string">Commentaire</th>
+                <th>Statut Validation</th>
                 <th>Actions</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="planning : ${plannings}">
+            <tr th:each="planning : ${plannings}"
+                th:attr="data-planning-id=${planning.id},
+                         data-validation-comment=${planning.validationComment},
+                         data-validated-by=${planning.validatedBy != null ? planning.validatedBy.prenom + ' ' + planning.validatedBy.nom : 'Non spécifié'},
+                         data-validation-date=${planning.validationDate != null ? #temporals.format(planning.validationDate, 'dd/MM/yyyy HH:mm') : null}">
                 <td th:text="${planning.id}"></td>
                 <td th:text="${planning.tache}"></td>
                 <td th:text="${planning.dateDebut}" class="date-value"></td>
                 <td th:text="${planning.dateFin}" class="date-value"></td>
                 <td>
-                    <div class="truncate-text" th:text="${planning.commentaire}" th:attr="data-bs-toggle='tooltip', data-bs-placement='top', title=${planning.commentaire}"></div>
+                    <div class="truncate-text" th:text="${planning.commentaire}"
+                         th:attr="data-bs-toggle='tooltip', data-bs-placement='top', title=${planning.commentaire}"></div>
                 </td>
                 <td>
-                    <a th:href="@{'/planning-de-test/' + ${planning.id} + '/modifier'}" class="btn btn-sm btn-warning">
-                        <i class="bi bi-pencil"></i>
-                    </a>
-                    <a th:href="@{'/planning-de-test/' + ${planning.id} + '/supprimer'}" class="btn btn-sm btn-danger"
-                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce planning ?');">
-                        <i class="bi bi-trash"></i>
-                    </a>
+                    <span th:switch="${planning.validationStatus?.name()}">
+                        <!-- Approved status -->
+                        <span th:case="'APPROVED'" class="badge bg-success"
+                              data-bs-toggle="modal" data-bs-target="#validationDetailsModal"
+                              th:attr="data-planning-id=${planning.id}">
+                            <i class="bi bi-check-circle"></i> Validé
+                            <small th:if="${planning.validationDate}" class="d-block"
+                                   th:text="${#temporals.format(planning.validationDate, 'dd/MM/yyyy')}"></small>
+                        </span>
+
+                        <!-- Rejected status -->
+                        <span th:case="'REJECTED'" class="badge bg-danger"
+                              data-bs-toggle="modal" data-bs-target="#validationDetailsModal"
+                              th:attr="data-planning-id=${planning.id}">
+                            <i class="bi bi-x-circle"></i> Refusé
+                            <small th:if="${planning.validationDate}" class="d-block"
+                                   th:text="${#temporals.format(planning.validationDate, 'dd/MM/yyyy')}"></small>
+                        </span>
+
+                        <!-- Pending status -->
+                        <span th:case="'PENDING'" class="badge bg-warning text-dark"
+                              data-bs-toggle="modal" data-bs-target="#validationDetailsModal"
+                              th:attr="data-planning-id=${planning.id}">
+                            <i class="bi bi-hourglass"></i> En attente
+                        </span>
+
+                        <!-- Default status -->
+                        <span th:case="*" class="badge bg-secondary">
+                            Non demandé
+                        </span>
+                    </span>
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <a th:href="@{'/planning-de-test/' + ${planning.id} + '/modifier'}" class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a th:href="@{'/planning-de-test/' + ${planning.id} + '/supprimer'}" class="btn btn-sm btn-danger"
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce planning ?');">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                        <a th:if="${planning.validationStatus == null || planning.validationStatus.name() == 'REJECTED'}"
+                           th:href="@{'/planning-de-test/' + ${planning.id} + '/demander-validation'}"
+                           class="btn btn-sm btn-primary">
+                            <i class="bi bi-send-check"></i>
+                        </a>
+                    </div>
                 </td>
             </tr>
             </tbody>
         </table>
 
-        <!-- Message quand aucun résultat de recherche -->
+        <!-- No results message -->
         <div id="noResultsMessage" class="alert alert-info mt-3 d-none">
             Aucun planning de test ne correspond à votre recherche.
         </div>
     </div>
+</div>
 
-    <!-- Modal pour ajouter un planning -->
-    <div class="modal fade" id="ajouterPlanningModal" tabindex="-1" aria-labelledby="ajouterPlanningModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
+<!-- Add Planning Modal -->
+<div class="modal fade" id="ajouterPlanningModal" tabindex="-1" aria-labelledby="ajouterPlanningModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ajouterPlanningModalLabel">Nouveau Planning de Test</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form th:action="@{/planning-de-test/creer}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="tache" class="form-label">Tâche</label>
+                        <input type="text" class="form-control" id="tache" name="tache" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="dateDebut" class="form-label">Date Début</label>
+                            <input type="date" class="form-control" id="dateDebut" name="dateDebut" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="dateFin" class="form-label">Date Fin</label>
+                            <input type="date" class="form-control" id="dateFin" name="dateFin" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="commentaire" class="form-label">Commentaire</label>
+                        <textarea class="form-control" id="commentaire" name="commentaire" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Request Validation Modal -->
+<div class="modal fade" id="demanderValidationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form th:action="@{/planning-de-test/demander-validation-tous}" method="post">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="ajouterPlanningModalLabel">Nouveau Planning de Test</h5>
+                    <h5 class="modal-title">Demande de validation</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form th:action="@{/planning-de-test/creer}" method="post">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="tache" class="form-label">Tâche</label>
-                            <input type="text" class="form-control" id="tache" name="tache" required>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="dateDebut" class="form-label">Date Début</label>
-                                <input type="date" class="form-control" id="dateDebut" name="dateDebut" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="dateFin" class="form-label">Date Fin</label>
-                                <input type="date" class="form-control" id="dateFin" name="dateFin" required>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="commentaire" class="form-label">Commentaire</label>
-                            <textarea class="form-control" id="commentaire" name="commentaire" rows="3" required></textarea>
-                        </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        Vous êtes sur le point de demander la validation pour <span th:text="${#lists.size(plannings)}"></span> plannings.
                     </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    <div class="mb-3">
+                        <label class="form-label">Message (optionnel)</label>
+                        <textarea name="message" class="form-control" rows="3"></textarea>
                     </div>
-                </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Confirmer la demande</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Validation Details Modal -->
+<div class="modal fade" id="validationDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détails de la validation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="validationDetailsContent">
+                <!-- Content will be loaded dynamically via JavaScript -->
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
             </div>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Script pour la recherche et le tri -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Référence au tableau et aux éléments de recherche
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Table filtering and sorting functionality
         const table = document.getElementById('planningsTable');
+        if (!table) return;
+
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
         const searchInput = document.getElementById('searchInput');
         const startDateInput = document.getElementById('startDate');
         const endDateInput = document.getElementById('endDate');
@@ -321,85 +423,32 @@
         const resetDatesBtn = document.getElementById('resetDates');
         const noResultsMessage = document.getElementById('noResultsMessage');
 
-        if (!table) return; // Protection contre les erreurs si le tableau n'existe pas
-
-        const tbody = table.querySelector('tbody');
-        const rows = Array.from(tbody.querySelectorAll('tr'));
-
-        // Initialiser les tooltips pour les commentaires
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl, {
-                html: true
-            });
-        });
-
-        // Variables pour le tri
-        let sortDirection = {};
-        let currentSortColumn = null;
-
-        // Fonction de recherche dynamique
-        if (searchInput) {
-            searchInput.addEventListener('input', function() {
-                filterTableRows();
-            });
-        }
-
-        // Événement pour le filtre par date
-        if (filterDatesBtn) {
-            filterDatesBtn.addEventListener('click', function() {
-                filterTableRows();
-            });
-        }
-
-        // Événement pour réinitialiser les dates
-        if (resetDatesBtn) {
-            resetDatesBtn.addEventListener('click', function() {
-                startDateInput.value = '';
-                endDateInput.value = '';
-                filterTableRows();
-            });
-        }
-
-        // Fonction principale pour filtrer les lignes du tableau
+        // Filter table rows based on search and date filters
         function filterTableRows() {
-            const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
-            const startDate = startDateInput && startDateInput.value ? new Date(startDateInput.value) : null;
-            const endDate = endDateInput && endDateInput.value ? new Date(endDateInput.value) : null;
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
+            const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
 
-            // Ajuster la fin de journée pour endDate
-            if (endDate) {
-                endDate.setHours(23, 59, 59, 999);
-            }
+            if (endDate) endDate.setHours(23, 59, 59, 999);
 
             let visibleCount = 0;
 
             rows.forEach(row => {
-                // Filtrage par texte
                 const text = row.textContent.toLowerCase();
                 let isVisible = text.includes(searchTerm);
 
-                // Filtrage supplémentaire par date si nécessaire
                 if (isVisible && (startDate || endDate)) {
                     const dateColumns = row.querySelectorAll('.date-value');
                     if (dateColumns.length >= 2) {
-                        const rowStartDateStr = dateColumns[0].textContent.trim();
-                        const rowEndDateStr = dateColumns[1].textContent.trim();
-
-                        // Conversion des chaînes de date au format Date
-                        const rowStartDate = parseDate(rowStartDateStr);
-                        const rowEndDate = parseDate(rowEndDateStr);
+                        const rowStartDate = parseDate(dateColumns[0].textContent.trim());
+                        const rowEndDate = parseDate(dateColumns[1].textContent.trim());
 
                         if (rowStartDate && rowEndDate) {
-                            // Vérification si les dates du planning chevauchent la plage sélectionnée
                             if (startDate && endDate) {
-                                // Cas où les deux dates sont spécifiées
                                 isVisible = (rowStartDate <= endDate && rowEndDate >= startDate);
                             } else if (startDate) {
-                                // Cas où seule la date de début est spécifiée
                                 isVisible = (rowEndDate >= startDate);
                             } else if (endDate) {
-                                // Cas où seule la date de fin est spécifiée
                                 isVisible = (rowStartDate <= endDate);
                             }
                         }
@@ -407,143 +456,123 @@
                 }
 
                 row.style.display = isVisible ? '' : 'none';
-
-                if (isVisible) {
-                    visibleCount++;
-                    // Ajoute une animation de surbrillance pour les lignes qui correspondent
-                    if (searchTerm !== '' || startDate || endDate) {
-                        row.classList.add('highlight-row');
-                        setTimeout(() => {
-                            row.classList.remove('highlight-row');
-                        }, 1500);
-                    }
-                }
+                if (isVisible) visibleCount++;
             });
 
-            // Afficher un message si aucun résultat n'est trouvé
-            if (noResultsMessage) {
-                if (visibleCount === 0 && rows.length > 0) {
-                    noResultsMessage.classList.remove('d-none');
-                } else {
-                    noResultsMessage.classList.add('d-none');
-                }
-            }
+            noResultsMessage.classList.toggle('d-none', visibleCount > 0 || rows.length === 0);
         }
 
-        // Fonction pour parser les dates
+        // Parse date from string
         function parseDate(dateStr) {
-            // Détection du format de la date
-            let date;
-
-            // Format FR: DD/MM/YYYY
             if (dateStr.includes('/')) {
                 const parts = dateStr.split('/');
-                if (parts.length === 3) {
-                    date = new Date(parts[2], parts[1] - 1, parts[0]);
-                }
+                if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]);
+            } else if (dateStr.includes('-')) {
+                return new Date(dateStr);
             }
-            // Format ISO: YYYY-MM-DD
-            else if (dateStr.includes('-')) {
-                date = new Date(dateStr);
-            }
-
-            return date;
+            return null;
         }
 
-        // Configuration du tri
-        const headers = table.querySelectorAll('th');
-
-        headers.forEach(header => {
-            if (!header.dataset.sort) return; // Ignorer les colonnes sans attribut de tri
-
-            const sortIcon = header.querySelector('.sort-icon');
-            if (!sortIcon) return;
-
-            // Initialiser la direction de tri pour cette colonne
-            sortDirection[header.textContent.trim()] = 'none';
-
-            header.addEventListener('click', function() {
-                const columnName = this.textContent.trim();
-                const sortType = this.dataset.sort;
-
-                // Cycle de tri: none -> asc -> desc -> none
-                if (sortDirection[columnName] === 'none') {
-                    sortDirection[columnName] = 'asc';
-                    sortIcon.innerHTML = '<i class="bi bi-arrow-up"></i>';
-                } else if (sortDirection[columnName] === 'asc') {
-                    sortDirection[columnName] = 'desc';
-                    sortIcon.innerHTML = '<i class="bi bi-arrow-down"></i>';
-                } else {
-                    sortDirection[columnName] = 'none';
-                    sortIcon.innerHTML = '<i class="bi bi-arrow-down-up"></i>';
-
-                    // Réinitialiser l'ordre d'origine
-                    resetTableOrder();
-                    return;
-                }
-
-                // Réinitialiser les autres icônes de tri
-                headers.forEach(h => {
-                    if (h !== header && h.querySelector('.sort-icon')) {
-                        h.querySelector('.sort-icon').innerHTML = '<i class="bi bi-arrow-down-up"></i>';
-                        sortDirection[h.textContent.trim()] = 'none';
-                    }
-                });
-
-                // Déterminer l'index de la colonne
-                const columnIndex = Array.from(header.parentNode.children).indexOf(header);
-
-                // Trier les lignes
-                sortTable(columnIndex, sortDirection[columnName], sortType);
-            });
+        // Event listeners
+        if (searchInput) searchInput.addEventListener('input', filterTableRows);
+        if (filterDatesBtn) filterDatesBtn.addEventListener('click', filterTableRows);
+        if (resetDatesBtn) resetDatesBtn.addEventListener('click', function() {
+            startDateInput.value = '';
+            endDateInput.value = '';
+            filterTableRows();
         });
 
-        // Fonction pour trier le tableau
-        function sortTable(columnIndex, direction, sortType) {
-            const sortedRows = rows.slice().sort((a, b) => {
-                const aValue = a.children[columnIndex].textContent.trim();
-                const bValue = b.children[columnIndex].textContent.trim();
-
-                // Tri spécial pour les dates
-                if (columnIndex === 2 || columnIndex === 3) { // Indices des colonnes de dates
-                    const aDate = parseDate(aValue);
-                    const bDate = parseDate(bValue);
-
-                    if (aDate && bDate) {
-                        return direction === 'asc' ? aDate - bDate : bDate - aDate;
+        // Handle validation details modal
+        const validationDetailsModal = document.getElementById('validationDetailsModal');
+        if (validationDetailsModal) {
+            validationDetailsModal.addEventListener('show.bs.modal', function(event) {
+                try {
+                    const button = event.relatedTarget;
+                    if (!button) {
+                        console.error("Le bouton déclencheur n'a pas été trouvé");
+                        return;
                     }
-                }
 
-                if (direction === 'asc') {
-                    if (sortType === 'numeric') {
-                        return parseFloat(aValue) - parseFloat(bValue);
+                    const planningId = button.getAttribute('data-planning-id');
+                    console.log("ID du planning:", planningId);
+
+                    // Trouver la ligne correspondante dans le tableau
+                    const planningRow = document.querySelector(`tr[data-planning-id="${planningId}"]`);
+                    if (!planningRow) {
+                        console.error("La ligne du tableau n'a pas été trouvée");
+                        return;
+                    }
+
+                    // Récupérer les données Thymeleaf depuis les attributs data
+                    const validationComment = planningRow.getAttribute('data-validation-comment') || "Aucun commentaire de validation";
+                    const validatedBy = planningRow.getAttribute('data-validated-by') || "Non spécifié";
+                    const validationDate = planningRow.getAttribute('data-validation-date') || null;
+
+                    // Extraire les autres données des cellules
+                    const cells = planningRow.querySelectorAll('td');
+                    const id = cells[0].textContent.trim();
+                    const tache = cells[1].textContent.trim();
+                    const dateDebut = cells[2].textContent.trim();
+                    const dateFin = cells[3].textContent.trim();
+
+                    // Déterminer le statut
+                    let status, statusClass;
+                    if (button.classList.contains('bg-success')) {
+                        status = 'Validé';
+                        statusClass = 'bg-success';
+                    } else if (button.classList.contains('bg-danger')) {
+                        status = 'Refusé';
+                        statusClass = 'bg-danger';
                     } else {
-                        return aValue.localeCompare(bValue, 'fr', { sensitivity: 'base' });
+                        status = 'En attente';
+                        statusClass = 'bg-warning text-dark';
                     }
-                } else {
-                    if (sortType === 'numeric') {
-                        return parseFloat(bValue) - parseFloat(aValue);
-                    } else {
-                        return bValue.localeCompare(aValue, 'fr', { sensitivity: 'base' });
-                    }
+
+                    // Construire le contenu du modal
+                    const modalContent = `
+                        <div class="validation-detail-item">
+                            <div class="validation-detail-label">Tâche</div>
+                            <div>${tache}</div>
+                        </div>
+                        <div class="validation-detail-item">
+                            <div class="validation-detail-label">Statut</div>
+                            <div>
+                                <span class="badge ${statusClass}">
+                                    ${status}
+                                </span>
+                            </div>
+                        </div>
+                        ${validationDate ? `
+                        <div class="validation-detail-item">
+                            <div class="validation-detail-label">Date de validation</div>
+                            <div>${validationDate}</div>
+                        </div>
+                        <div class="validation-detail-item">
+                            <div class="validation-detail-label">Validé par</div>
+                            <div>${validatedBy}</div>
+                        </div>
+                        ` : ''}
+                        <div class="validation-detail-item">
+                            <div class="validation-detail-label">Période</div>
+                            <div>Du ${dateDebut} au ${dateFin}</div>
+                        </div>
+                        <div class="validation-comment">
+                            <div class="validation-detail-label">Commentaire du Chef de Projet</div>
+                            <div>${validationComment}</div>
+                        </div>
+                    `;
+
+                    document.getElementById('validationDetailsContent').innerHTML = modalContent;
+                } catch (error) {
+                    console.error("Erreur lors du traitement des détails de validation:", error);
+                    document.getElementById('validationDetailsContent').innerHTML = `
+                        <div class="alert alert-danger">
+                            Une erreur s'est produite lors du chargement des détails.
+                            Veuillez réessayer ou contacter l'administrateur.
+                        </div>
+                    `;
                 }
             });
-
-            // Vider et remplir le tableau avec les lignes triées
-            while (tbody.firstChild) {
-                tbody.removeChild(tbody.firstChild);
-            }
-
-            sortedRows.forEach(row => tbody.appendChild(row));
-        }
-
-        // Fonction pour réinitialiser l'ordre du tableau
-        function resetTableOrder() {
-            while (tbody.firstChild) {
-                tbody.removeChild(tbody.firstChild);
-            }
-
-            rows.forEach(row => tbody.appendChild(row));
         }
     });
 </script>

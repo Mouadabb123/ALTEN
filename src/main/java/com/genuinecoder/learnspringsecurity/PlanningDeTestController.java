@@ -81,6 +81,12 @@ public class PlanningDeTestController {
         Set<MyUser> testLeaders = new HashSet<>();
         testLeaders.add(currentUser);
 
+        List<Equipe> equipes = equipeRepository.findByTestLead(currentUser);
+        if (equipes.isEmpty()) {
+            throw new IllegalStateException("Le Test Lead n'est pas assigné à une équipe");
+        }
+        planningDeTest.setEquipe(equipes.get(0));
+
         if (selectedLeadersIds != null && !selectedLeadersIds.isEmpty()) {
             List<MyUser> selectedLeaders = myUserRepository.findAllById(selectedLeadersIds);
             testLeaders.addAll(selectedLeaders);
@@ -122,6 +128,9 @@ public class PlanningDeTestController {
         String email = authentication.getName();
         MyUser currentUser = myUserRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
+
+        // Récupérer les plannings associés à ce test lead
+        List<PlanningDeTest> plannings = planningDeTestRepository.findByTestLeadsContains(currentUser);
 
         // Modifié: Autoriser l'accès à tous les Test Leaders
         if (currentUser.getRole() != MyUser.Role.TEST_LEADER) {
@@ -308,5 +317,35 @@ public class PlanningDeTestController {
         model.addAttribute("plannings", plannings);
 
         return "Liste_planning_chef";
+    }
+
+    @PostMapping("/demander-validation-tous")
+    public String demanderValidationPourTous(@RequestParam(required = false) String message,
+                                             Authentication authentication,
+                                             RedirectAttributes redirectAttributes) {
+
+        String email = authentication.getName();
+        MyUser currentUser = myUserRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
+
+        if (currentUser.getRole() != MyUser.Role.TEST_LEADER) {
+            throw new AccessDeniedException("Accès réservé aux Test Leaders");
+        }
+
+        // Récupérer tous les plannings du test lead
+        List<PlanningDeTest> plannings = planningDeTestRepository.findByTestLeadsContains(currentUser);
+
+        // Mettre à jour le statut de validation
+        for (PlanningDeTest planning : plannings) {
+            planning.setValidationStatus(PlanningDeTest.ValidationStatus.PENDING);
+            historiqueService.enregistrerAction(planning, currentUser, "VALIDATION_REQUEST",
+                    "Demande de validation envoyée" + (message != null ? ": " + message : ""));
+        }
+
+        planningDeTestRepository.saveAll(plannings);
+
+        redirectAttributes.addFlashAttribute("success",
+                "Demande de validation envoyée pour " + plannings.size() + " plannings");
+        return "redirect:/planning-de-test/liste";
     }
 }
